@@ -11,6 +11,11 @@ route_type = 'quickest'
 resp_format = 'html'
 
 
+@app.route('/')
+def index():
+    return "Hello world!\n\nJust to confirm your server is working :)"
+
+
 @app.route('/route/<orig_lon>,<orig_lat>/<dest_lon>,<dest_lat>')
 def route(orig_lon, orig_lat, dest_lon, dest_lat):
     # Build URLs for Routino
