@@ -1,47 +1,56 @@
+import json
+
 import requests
 from flask import Flask
 
-# Instatiate the Flask server
+from utils import ROUTE_TYPES
+from utils import build_detail_urls
+from utils import build_urls
+from utils import parse_gpx_route
+from utils import parse_gpx_track
+from utils import validate_coords
+
+
+# Instantiate the Flask server
 app = Flask(__name__)
-# Routino instance URL
-host = 'http://localhost:8080/routino/'
-# quickest / shortest are the options
-route_type = 'quickest'
-# Routino response format: html, gpx, text, ...
-resp_format = 'html'
 
 
 @app.route('/')
 def index():
-    return "Hello world!\n\nJust to confirm your server is working :)"
+    return 'Hello world! Just to confirm your server is working :)'
 
 
-@app.route('/route/<orig_lon>,<orig_lat>/<dest_lon>,<dest_lat>')
-def route(orig_lon, orig_lat, dest_lon, dest_lat):
-    # Build URLs for Routino
-    coords_str = 'lon1={lon1};lon2={lon2};lat1={lat1};lat2={lat2}'.format(
-        lon1=orig_lon, lon2=dest_lon,
-        lat1=orig_lat, lat2=dest_lat,
-    )
-    # URL components
-    url1 = [host, 'router.cgi?transport=hgv;type={type};', coords_str]
-    url2 = [host, 'results.cgi?uuid={uuid};type={type};format={format}']
-    # Build the URL
+@app.route('/<orig_lon>,<orig_lat>/<dest_lon>,<dest_lat>/<route_type>')
+def route(orig_lon, orig_lat, dest_lon, dest_lat, route_type):
+    # Validate input coordinates before submitting to Routino
+    orig_lat, orig_lon, msg = validate_coords(orig_lat, orig_lon)
+    if msg != 'OK':
+        return 'Error with origin coordinates: {msg}'.format(msg=msg)
+    dest_lat, dest_lon, message = validate_coords(dest_lat, dest_lon)
+    if msg != 'OK':
+        return 'Error with destination coordinates: {msg}'.format(msg=msg)
+    # Validate input route type before submitting to Routino
+    if str(route_type).lower() not in ROUTE_TYPES:
+        return 'Error with given route type. Allowed: quickest/shortest'
+    # Build URLs for Routino (1st for router calling, 2nd for results)
+    url1, url2 = build_urls(orig_lon, dest_lon, orig_lat, dest_lat)
     first_url = ''.join(url1).format(type=route_type)
-    # Check if trip was successfully planned
     uuid, status = requests.get(first_url).content.strip().split('\n')
+    # Check if trip was successfully planned
     if status == 'OK':
+        route_url, track_url = build_detail_urls(url2, uuid, route_type)
         # Get the step-by-step data
-        second_url = ''.join(url2).format(
-            uuid=uuid,
-            type=route_type,
-            format=resp_format,
-        )
-        response = requests.get(second_url)
-        return requests.get(second_url).content
+        route_resp = requests.get(route_url)
+        # Get the points data
+        track_resp = requests.get(track_url)
+        # Parse the info to retrieve it in data objects
+        route = parse_gpx_route(route_resp.content)
+        track = parse_gpx_track(track_resp.content)
+        # route is the step-by-step text, track is the polyline
+        return json.dumps({'route': route, 'track': track})
     else:
         # Inform an error occurred
-        return 'Error\n\nCalling {url}'.format(url=first_url)
+        return 'Error calling {url}'.format(url=first_url)
 
 
 if __name__ == '__main__':
