@@ -14,6 +14,10 @@ Flask's [installation documentation](http://flask.pocoo.org/docs/0.10/installati
 
 ### Requirements
 
+- Routino instance running somewhere (check [**this project**](https://github.com/OneStopTransport/routino-vagrant) if you want a Vagrant machine)
+- Python 2.7 (we recommend the use of [`pyenv`](https://github.com/yyuu/pyenv))
+- Command line shell/terminal
+
 Besides `pyenv` and `virtualenv` (which are not mandatory, but should be used), we need some libraries in order to run this project. So, assuming you have created a virtual environment and are using it, run the following command:
 
 ```
