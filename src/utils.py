@@ -67,6 +67,25 @@ def get_speeds(vehicle_type):
     return car_speeds[vehicle_type] if vehicle_type in VEHICLES else []
 
 
+def create_speeds_dict():
+    """
+        Returns the freshly-created and complex data structure:
+            - A dictionary of dictionaries...
+            - Where each key is a vehicle type and...
+            - Each value is a dict mapping road types with speed limits
+        e.g.
+            {
+                CAR: { MOTORWAY: 120, TRUNK: 100, PRIMARY: 100, ... },
+                GOODS: { MOTORWAY: 110, TRUNK: 90, PRIMARY: 90, ... },
+                ...
+            }
+    """
+    return {each: dict(zip(ROADS, get_speeds(each))) for each in VEHICLES}
+
+# Create the complex data structure with Portugal speed limits
+SPEEDS = create_speeds_dict()
+
+
 def validate_coords(lat, lon):
     """ Validates a tuple of coordinates in datatype and range """
     try:
