@@ -13,6 +13,59 @@ ROUTE_TYPES = [QUICK, SHORT]
 GPX_TRACK = 'gpx-track'
 GPX_ROUTE = 'gpx-route'
 
+# Lightweight vehicle for people (just for validation)
+CAR = 'motorcar'
+# Lightweight vehicle for goods
+GOODS = 'goods'
+# Same as previous but with a trailer
+GOODS_TRAILER = 'goods-trailer'
+# Heavy Goods Vehicle (Heavy vehicle for goods)
+HGV = 'hgv'
+# Same as previous but with a trailer
+HGV_TRAILER = 'hgv-trailer'
+# Vehicle types on a list to help build the speed limits dictionary
+VEHICLES = [CAR, GOODS, GOODS_TRAILER, HGV, HGV_TRAILER]
+
+# Motorway = Auto-estrada - fastest road
+MOTORWAY = 'motorway'
+# Reserved Routes - second fastest
+TRUNK = 'trunk'
+PRIMARY = 'primary'
+# Outside cities
+SECONDARY = 'secondary'
+TERTIARY = 'tertiary'
+# Inside cities
+RESIDENTIAL = 'residential'
+SERVICE = 'service'
+UNCLASSIFIED = 'unclassified'
+# Slow roads
+TRACK = 'track'
+FERRY = 'ferry'
+# Forbidden roads
+CYCLEWAY = 'cycleway'
+PATH = 'path'
+STEPS = 'steps'
+# Road types on a list to help build the speed limits dictionary
+ROADS = [
+    MOTORWAY, TRUNK, PRIMARY, SECONDARY, TERTIARY, RESIDENTIAL, SERVICE, \
+    UNCLASSIFIED, TRACK, FERRY, CYCLEWAY, PATH, STEPS, \
+]
+
+
+def get_speeds(vehicle_type):
+    """ Auxiliary method to help building the speed limits dictionary.
+        Values (speed limits) are taken from the legal site (IMTT), sorted
+        by road type and grouped by vehicle type.
+        This returns the array of speed limits of a given vehicle_type. """
+    car_speeds = {
+        CAR: [120, 100, 100, 90, 90, 50, 50, 50, 10, 10, 0, 0, 0],
+        GOODS: [110, 90, 90, 80, 80, 50, 50, 50, 10, 10, 0, 0, 0],
+        GOODS_TRAILER: [90, 80, 80, 70, 70, 50, 50, 50, 10, 10, 0, 0, 0],
+        HGV: [90, 80, 80, 80, 80, 50, 50, 50, 10, 10, 0, 0, 0],
+        HGV_TRAILER: [80, 70, 70, 70, 70, 40, 40, 40, 10, 10, 0, 0, 0],
+    }
+    return car_speeds[vehicle_type] if vehicle_type in VEHICLES else []
+
 
 def validate_coords(lat, lon):
     """ Validates a tuple of coordinates in datatype and range """
