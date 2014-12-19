@@ -6,6 +6,7 @@ from flask import Flask
 from utils import ROUTE_TYPES
 from utils import build_detail_urls
 from utils import build_urls
+from utils import get_speeds_url_params
 from utils import parse_gpx_route
 from utils import parse_gpx_track
 from utils import validate_coords
@@ -20,8 +21,8 @@ def index():
     return 'Hello world! Just to confirm your server is working :)'
 
 
-@app.route('/<orig_lon>,<orig_lat>/<dest_lon>,<dest_lat>/<route_type>')
-def route(orig_lon, orig_lat, dest_lon, dest_lat, route_type):
+@app.route('/<orig_lon>,<orig_lat>/<dest_lon>,<dest_lat>/<route_type>/<vehicle>')
+def route(orig_lon, orig_lat, dest_lon, dest_lat, route_type, vehicle):
     # Validate input coordinates before submitting to Routino
     orig_lat, orig_lon, msg = validate_coords(orig_lat, orig_lon)
     if msg != 'OK':
@@ -34,7 +35,9 @@ def route(orig_lon, orig_lat, dest_lon, dest_lat, route_type):
         return 'Error with given route type. Allowed: quickest/shortest'
     # Build URLs for Routino (1st for router calling, 2nd for results)
     url1, url2 = build_urls(orig_lon, dest_lon, orig_lat, dest_lat)
-    first_url = ''.join(url1).format(type=route_type)
+    # Get speed limits parameters by vehicle type and add to URL
+    speeds = get_speeds_url_params(vehicle)
+    first_url = ''.join(url1).format(type=route_type, speeds=speeds)
     uuid, status = requests.get(first_url).content.strip().split('\n')
     # Check if trip was successfully planned
     if status == 'OK':

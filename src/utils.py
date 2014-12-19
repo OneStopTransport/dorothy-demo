@@ -105,14 +105,23 @@ def validate_coords(lat, lon):
     return (lat, lon, 'OK')
 
 
+def get_speeds_url_params(vehicle):
+    """ Returns the URL parameters with the received vehicle speed limits """
+    if vehicle not in VEHICLES:
+        return ''
+    else:
+        param = 'speed-{key}={val};'
+        speeds = [(key, val) for key, val in SPEEDS[vehicle].items()]
+        return ''.join([param.format(key=key, val=val) for key, val in speeds])
+
+
 def build_urls(lon1, lon2, lat1, lat2):
     """ Creates the two URLs needed for Routino """
-    # TODO receive type of vehicle and add properties accordingly
     coords_str = 'lon1={lon1};lon2={lon2};lat1={lat1};lat2={lat2}'.format(
         lon1=lon1, lon2=lon2,
         lat1=lat1, lat2=lat2,
     )
-    url1 = [HOST, 'router.cgi?transport=hgv;type={type};', coords_str]
+    url1 = [HOST, 'router.cgi?transport=hgv;type={type};{speeds}', coords_str]
     url2 = [HOST, 'results.cgi?uuid={uuid};type={type};format={format}']
     return url1, url2
 
