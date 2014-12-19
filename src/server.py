@@ -21,8 +21,8 @@ def index():
     return 'Hello world! Just to confirm your server is working :)'
 
 
-@app.route('/<orig_lon>,<orig_lat>/<dest_lon>,<dest_lat>/<route_type>/<vehicle>')
-def route(orig_lon, orig_lat, dest_lon, dest_lat, route_type, vehicle):
+@app.route('/<orig_lon>,<orig_lat>/<dest_lon>,<dest_lat>/<route>/<vehicle>')
+def route(orig_lon, orig_lat, dest_lon, dest_lat, route, vehicle):
     # Validate input coordinates before submitting to Routino
     orig_lat, orig_lon, msg = validate_coords(orig_lat, orig_lon)
     if msg != 'OK':
@@ -31,17 +31,17 @@ def route(orig_lon, orig_lat, dest_lon, dest_lat, route_type, vehicle):
     if msg != 'OK':
         return 'Error with destination coordinates: {msg}'.format(msg=msg)
     # Validate input route type before submitting to Routino
-    if str(route_type).lower() not in ROUTE_TYPES:
+    if str(route).lower() not in ROUTE_TYPES:
         return 'Error with given route type. Allowed: quickest/shortest'
     # Build URLs for Routino (1st for router calling, 2nd for results)
     url1, url2 = build_urls(orig_lon, dest_lon, orig_lat, dest_lat)
     # Get speed limits parameters by vehicle type and add to URL
     speeds = get_speeds_url_params(vehicle)
-    first_url = ''.join(url1).format(type=route_type, speeds=speeds)
+    first_url = ''.join(url1).format(type=route, speeds=speeds)
     uuid, status = requests.get(first_url).content.strip().split('\n')
     # Check if trip was successfully planned
     if status == 'OK':
-        route_url, track_url = build_detail_urls(url2, uuid, route_type)
+        route_url, track_url = build_detail_urls(url2, uuid, route)
         # Get the step-by-step data
         route_resp = requests.get(route_url)
         # Get the points data
