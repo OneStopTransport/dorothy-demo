@@ -44,10 +44,10 @@ def route(orig_lon, orig_lat, dest_lon, dest_lat, route_type):
         # Get the points data
         track_resp = requests.get(track_url)
         # Parse the info to retrieve it in data objects
-        route = parse_gpx_route(route_resp.content)
-        track = parse_gpx_track(track_resp.content)
+        route_gpx = parse_gpx_route(route_resp.content)
+        track_gpx = parse_gpx_track(track_resp.content)
         # route is the step-by-step text, track is the polyline
-        return json.dumps({'route': route, 'track': track})
+        return json.dumps({'route': route_gpx, 'track': track_gpx})
     else:
         # Inform an error occurred
         return 'Error calling {url}'.format(url=first_url)

@@ -100,17 +100,17 @@ def build_urls(lon1, lon2, lat1, lat2):
 
 def build_detail_urls(url2, uuid, route_type):
     """ Creates the URLs to retrieve the step-by-step information """
-    track_url = ''.join(url2).format(
-        uuid=uuid,
-        type=route_type,
-        format=GPX_TRACK,
-    )
     route_url = ''.join(url2).format(
         uuid=uuid,
         type=route_type,
         format=GPX_ROUTE,
     )
-    return track_url, route_url
+    track_url = ''.join(url2).format(
+        uuid=uuid,
+        type=route_type,
+        format=GPX_TRACK,
+    )
+    return route_url, track_url
 
 
 def build_point(rtept, tag_name, tag_desc):
