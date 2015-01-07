@@ -54,11 +54,15 @@ def build_urls_detail(result_url, uuid, route_type):
 
 def create_vehicle_attrs(attrs):
     """ Returns a dictionary with the vehicle attributes """
-    elements = [attrib if attrib else 0 for attrib in attrs.split(',')]
-    if len(elements) == (len(CAR_ATTRIBUTES) - 2):
-        elements.extend([1, 1])  # Adds oneway and turns restriction
-        return dict(zip(CAR_ATTRIBUTES, elements))
-    return {}
+    try:
+        # Assert all values are integers, if not, discard everything
+        attribs = [int(attrib) if attrib else 0 for attrib in attrs.split(',')]
+        if len(attribs) == (len(CAR_ATTRIBUTES) - 2):
+            attribs.extend([1, 1])  # Adds oneway and turns restriction
+            return dict(zip(CAR_ATTRIBUTES, attribs))
+        return {}
+    except ValueError:
+        return {}
 
 
 def get_properties_url_params(vehicle):
