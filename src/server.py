@@ -8,6 +8,7 @@ from utils import build_detail_urls
 from utils import build_urls
 from utils import create_vehicle_attrs
 from utils import get_speeds_url_params
+from utils import get_properties_url_params
 from utils import get_vehicle_attrs_url
 from utils import parse_gpx_route
 from utils import parse_gpx_track
@@ -40,14 +41,16 @@ def route(orig, dest, route, vehicle, attrs):
     # Validate input route type before submitting to Routino
     if str(route).lower() not in ROUTE_TYPES:
         return 'Error with given route type. Allowed: quickest/shortest'
-    # Get speed limits parameters by vehicle
+    # Get speed limits and road properties preferences for the given vehicle
     speeds = get_speeds_url_params(vehicle)
+    props = get_properties_url_params(vehicle)
     car_attrs = get_vehicle_attrs_url(attributes) if attributes else ''
     # Build URLs for Routino (1st for router calling, 2nd for results)
     url1, url2 = build_urls(orig_lon, dest_lon, orig_lat, dest_lat, car_attrs)
     first_url = ''.join(url1).format(
         type=route,
         speeds=speeds,
+        props=props,
         vehicle=vehicle,
     )
     uuid, status = requests.get(first_url).content.strip().split('\n')

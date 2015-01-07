@@ -14,6 +14,26 @@ from consts import ROADS
 from consts import VEHICLES
 
 
+def get_properties(vehicle_type):
+    """
+    Selects the %% preference for using each particular highway property
+    The value of <property> can be selected from:
+      * paved = Paved (suitable for normal wheels)
+      * multilane = Multiple lanes
+      * bridge = Bridge
+      * tunnel = Tunnel
+      * footroute = A route marked for foot travel
+      * bicycleroute = A route marked for bicycle travel
+    """
+    # The array with vehicle properties labels for the dictionary creation
+    car_props = {
+        CAR: [100, 60, 50, 50, 45, 45],
+        GOODS: [100, 60, 50, 50, 45, 45],
+        GOODS_TRAILER: [100, 70, 50, 50, 45, 45],
+        HGV: [100, 85, 50, 25, 45, 25],
+        HGV_TRAILER: [100, 85, 25, 25, 45, 25],
+    }
+    return car_props[vehicle_type] if vehicle_type in VEHICLES else []
 
 
 def get_speeds(vehicle_type):
@@ -31,6 +51,25 @@ def get_speeds(vehicle_type):
         HGV_TRAILER: [80, 70, 70, 70, 70, 40, 40, 40, 10, 10, 0, 0, 0],
     }
     return car_speeds[vehicle_type] if vehicle_type in VEHICLES else []
+
+
+def create_props_dict():
+    """
+    Returns the freshly-created and complex data structure:
+      - A dictionary of dictionaries...
+      - Where each key is a vehicle type and...
+      - Each value is a dict mapping road properties with preference
+    e.g.
+    {
+      CAR: { PAVED: 100, MULTILANE: 60, TUNNEL: 50, ... },
+      HGV: { PAVED: 100, MULTILANE: 85, TUNNEL: 25, ... },
+      ...
+    }
+    """
+    return {each: dict(zip(PROPS, get_properties(each))) for each in VEHICLES}
+
+# Create the complex data structure with road properties preferences by vehicle
+PROPERTIES = create_props_dict()
 
 
 def create_speeds_dict():
@@ -95,9 +134,18 @@ def get_speeds_url_params(vehicle):
     return ''
 
 
+def get_properties_url_params(vehicle):
+    """ Returns the URL parameters with the received vehicle properties """
+    if vehicle in VEHICLES:
+        param = 'property-{key}={val};'
+        props = [(key, val) for key, val in PROPERTIES[vehicle].items()]
+        return ''.join([param.format(key=key, val=val) for key, val in props])
+    return ''
+
+
 def build_urls(lon1, lon2, lat1, lat2, attrs):
     """ Creates the two URLs needed for Routino """
-    router = 'router.cgi?transport={vehicle};type={type};{speeds}'
+    router = 'router.cgi?transport={vehicle};type={type};{speeds}{props}'
     router_url = ''.join([router, attrs])
     coords_str = 'lon1={lon1};lon2={lon2};lat1={lat1};lat2={lat2}'.format(
         lon1=lon1, lon2=lon2,
