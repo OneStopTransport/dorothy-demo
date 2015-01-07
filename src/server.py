@@ -4,8 +4,8 @@ import requests
 from flask import Flask
 
 from consts import ROUTE_TYPES
-from utils import build_detail_urls
 from utils import build_urls
+from utils import build_urls_detail
 from utils import create_vehicle_attrs
 from utils import get_speeds_url_params
 from utils import get_properties_url_params
@@ -56,7 +56,7 @@ def route(orig, dest, route, vehicle, attrs):
     uuid, status = requests.get(first_url).content.strip().split('\n')
     # Check if trip was successfully planned
     if status == 'OK':
-        route_url, track_url = build_detail_urls(url2, uuid, route)
+        route_url, track_url = build_urls_detail(url2, uuid, route)
         # Get the step-by-step data
         route_resp = requests.get(route_url)
         # Get the points data

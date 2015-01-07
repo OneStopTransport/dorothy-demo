@@ -1,146 +1,26 @@
 import xml.etree.ElementTree as ET
 
 from consts import CAR_ATTRIBUTES
-from consts import CAR
-from consts import GOODS
-from consts import GOODS_TRAILER
+from consts import VEHICLES
 from consts import GPX_ROUTE
 from consts import GPX_TRACK
-from consts import HGV
-from consts import HGV_TRAILER
 from consts import HOST
-from consts import PROPS
-from consts import ROADS
-from consts import VEHICLES
+from consts import create_properties_dict
+from consts import create_speeds_dict
 
-
-def get_properties(vehicle_type):
-    """
-    Selects the %% preference for using each particular highway property
-    The value of <property> can be selected from:
-      * paved = Paved (suitable for normal wheels)
-      * multilane = Multiple lanes
-      * bridge = Bridge
-      * tunnel = Tunnel
-      * footroute = A route marked for foot travel
-      * bicycleroute = A route marked for bicycle travel
-    """
-    # The array with vehicle properties labels for the dictionary creation
-    car_props = {
-        CAR: [100, 60, 50, 50, 45, 45],
-        GOODS: [100, 60, 50, 50, 45, 45],
-        GOODS_TRAILER: [100, 70, 50, 50, 45, 45],
-        HGV: [100, 85, 50, 25, 45, 25],
-        HGV_TRAILER: [100, 85, 25, 25, 45, 25],
-    }
-    return car_props[vehicle_type] if vehicle_type in VEHICLES else []
-
-
-def get_speeds(vehicle_type):
-    """
-    Auxiliary method to help building the speed limits dictionary.
-    Values (speed limits) are taken from the legal site (IMTT), sorted
-    by road type and grouped by vehicle type.
-    This returns the array of speed limits of a given vehicle_type.
-    """
-    car_speeds = {
-        CAR: [120, 100, 100, 90, 90, 50, 50, 50, 10, 10, 0, 0, 0],
-        GOODS: [110, 90, 90, 80, 80, 50, 50, 50, 10, 10, 0, 0, 0],
-        GOODS_TRAILER: [90, 80, 80, 70, 70, 50, 50, 50, 10, 10, 0, 0, 0],
-        HGV: [90, 80, 80, 80, 80, 50, 50, 50, 10, 10, 0, 0, 0],
-        HGV_TRAILER: [80, 70, 70, 70, 70, 40, 40, 40, 10, 10, 0, 0, 0],
-    }
-    return car_speeds[vehicle_type] if vehicle_type in VEHICLES else []
-
-
-def create_props_dict():
-    """
-    Returns the freshly-created and complex data structure:
-      - A dictionary of dictionaries...
-      - Where each key is a vehicle type and...
-      - Each value is a dict mapping road properties with preference
-    e.g.
-    {
-      CAR: { PAVED: 100, MULTILANE: 60, TUNNEL: 50, ... },
-      HGV: { PAVED: 100, MULTILANE: 85, TUNNEL: 25, ... },
-      ...
-    }
-    """
-    return {each: dict(zip(PROPS, get_properties(each))) for each in VEHICLES}
 
 # Create the complex data structure with road properties preferences by vehicle
-PROPERTIES = create_props_dict()
-
-
-def create_speeds_dict():
-    """
-    Returns the freshly-created and complex data structure:
-      - A dictionary of dictionaries...
-      - Where each key is a vehicle type and...
-      - Each value is a dict mapping road types with speed limits
-    e.g.
-    {
-      CAR: { MOTORWAY: 120, TRUNK: 100, PRIMARY: 100, ... },
-      GOODS: { MOTORWAY: 110, TRUNK: 90, PRIMARY: 90, ... },
-      ...
-    }
-    """
-    return {each: dict(zip(ROADS, get_speeds(each))) for each in VEHICLES}
-
+PROPERTIES = create_properties_dict()
 # Create the complex data structure with Portugal speed limits
 SPEEDS = create_speeds_dict()
 
 
-def create_vehicle_attrs(attrs):
-    """ Returns a dictionary with the vehicle attributes """
-    if len(attrs) == (len(CAR_ATTRIBUTES) - 2):
-        elements = [attrib if attrib else 0 for attrib in attrs.split(',')]
-        elements.extend(1, 1)  # Adds oneway and turns restriction
-        return dict(zip(CAR_ATTRIBUTES, elements))
-    return {}
-
-
-def get_vehicle_attrs_url(props):
-    """ Returns vehicle properties from dict as URL params for Routino """
-    param = '{key}={val};'
-    return ''.join([param.format(key=k, val=v) for k, v in props.items()])
-
-
-def validate_coords(coordinates):
-    """ Validates a tuple of coordinates in datatype and range """
-    try:
-        # Check if it's a tuple of numbers
-        lon, lat = coordinates.split(',')
-        lat, lon = float(lat), float(lon)
-    except ValueError as error:
-        return (None, None, 'Invalid coordinates, expecting tuple of numbers')
-    # Check if coordinates are in range
-    if (lat < -90) or (lat > 90):
-        error = 'Invalid latitude: {lat}, should be between -90 and 90'
-        return (None, None, error.format(lat=lat))
-    if (lon < -180) or (lon > 180):
-        error = 'Invalid longitude: {lon}, should be between -180 and 180'
-        return (None, None, error.format(lon=lon))
-    # All OK
-    return (lat, lon, 'OK')
-
-
-def get_speeds_url_params(vehicle):
-    """ Returns the URL parameters with the received vehicle speed limits """
-    if vehicle in VEHICLES:
-        param = 'speed-{key}={val};'
-        speeds = [(key, val) for key, val in SPEEDS[vehicle].items()]
-        return ''.join([param.format(key=key, val=val) for key, val in speeds])
-    return ''
-
-
-def get_properties_url_params(vehicle):
-    """ Returns the URL parameters with the received vehicle properties """
-    if vehicle in VEHICLES:
-        param = 'property-{key}={val};'
-        props = [(key, val) for key, val in PROPERTIES[vehicle].items()]
-        return ''.join([param.format(key=key, val=val) for key, val in props])
-    return ''
+def build_point(rtept, tag_name, tag_desc):
+    """ Returns a dictionary with the relevant attributes """
+    point = rtept.attrib  # rtept is a dict with lat and lon, append the rest
+    point['name'] = rtept.find(tag_name).text
+    point['desc'] = rtept.find(tag_desc).text
+    return point
 
 
 def build_urls(lon1, lon2, lat1, lat2, attrs):
@@ -157,7 +37,7 @@ def build_urls(lon1, lon2, lat1, lat2, attrs):
     return url1, url2
 
 
-def build_detail_urls(result_url, uuid, route_type):
+def build_urls_detail(result_url, uuid, route_type):
     """ Creates the URLs to retrieve the step-by-step information """
     route_url = ''.join(result_url).format(
         uuid=uuid,
@@ -172,12 +52,37 @@ def build_detail_urls(result_url, uuid, route_type):
     return route_url, track_url
 
 
-def build_point(rtept, tag_name, tag_desc):
-    """ Returns a dictionary with the relevant attributes """
-    point = rtept.attrib  # rtept is a dict with lat and lon, append the rest
-    point['name'] = rtept.find(tag_name).text
-    point['desc'] = rtept.find(tag_desc).text
-    return point
+def create_vehicle_attrs(attrs):
+    """ Returns a dictionary with the vehicle attributes """
+    if len(attrs) == (len(CAR_ATTRIBUTES) - 2):
+        elements = [attrib if attrib else 0 for attrib in attrs.split(',')]
+        elements.extend(1, 1)  # Adds oneway and turns restriction
+        return dict(zip(CAR_ATTRIBUTES, elements))
+    return {}
+
+
+def get_properties_url_params(vehicle):
+    """ Returns the URL parameters with the received vehicle properties """
+    if vehicle in VEHICLES:
+        param = 'property-{key}={val};'
+        props = [(key, val) for key, val in PROPERTIES[vehicle].items()]
+        return ''.join([param.format(key=key, val=val) for key, val in props])
+    return ''
+
+
+def get_speeds_url_params(vehicle):
+    """ Returns the URL parameters with the received vehicle speed limits """
+    if vehicle in VEHICLES:
+        param = 'speed-{key}={val};'
+        speeds = [(key, val) for key, val in SPEEDS[vehicle].items()]
+        return ''.join([param.format(key=key, val=val) for key, val in speeds])
+    return ''
+
+
+def get_vehicle_attrs_url(props):
+    """ Returns vehicle properties from dict as URL params for Routino """
+    param = '{key}={val};'
+    return ''.join([param.format(key=k, val=v) for k, v in props.items()])
 
 
 def parse_gpx_route(response):
@@ -200,3 +105,22 @@ def parse_gpx_track(response):
     trkpt_name = ''.join([namespace, 'trkpt'])
     # Returns a list of dictionaries with latitude and longitude
     return [trkpt.attrib for trkpt in root.iter(trkpt_name)]
+
+
+def validate_coords(coordinates):
+    """ Validates a tuple of coordinates in datatype and range """
+    try:
+        # Check if it's a tuple of numbers
+        lon, lat = coordinates.split(',')
+        lat, lon = float(lat), float(lon)
+    except ValueError as error:
+        return (None, None, 'Invalid coordinates, expecting tuple of numbers')
+    # Check if coordinates are in range
+    if (lat < -90) or (lat > 90):
+        error = 'Invalid latitude: {lat}, should be between -90 and 90'
+        return (None, None, error.format(lat=lat))
+    if (lon < -180) or (lon > 180):
+        error = 'Invalid longitude: {lon}, should be between -180 and 180'
+        return (None, None, error.format(lon=lon))
+    # All OK
+    return (lat, lon, 'OK')
