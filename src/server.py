@@ -3,7 +3,7 @@ import json
 import requests
 from flask import Flask
 
-from utils import ROUTE_TYPES
+from consts import ROUTE_TYPES
 from utils import build_detail_urls
 from utils import build_urls
 from utils import get_speeds_url_params
