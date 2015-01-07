@@ -73,12 +73,11 @@ def validate_coords(lat, lon):
 
 def get_speeds_url_params(vehicle):
     """ Returns the URL parameters with the received vehicle speed limits """
-    if vehicle not in VEHICLES:
-        return ''
-    else:
+    if vehicle in VEHICLES:
         param = 'speed-{key}={val};'
         speeds = [(key, val) for key, val in SPEEDS[vehicle].items()]
         return ''.join([param.format(key=key, val=val) for key, val in speeds])
+    return ''
 
 
 def build_urls(lon1, lon2, lat1, lat2):
@@ -92,14 +91,14 @@ def build_urls(lon1, lon2, lat1, lat2):
     return url1, url2
 
 
-def build_detail_urls(url2, uuid, route_type):
+def build_detail_urls(result_url, uuid, route_type):
     """ Creates the URLs to retrieve the step-by-step information """
-    route_url = ''.join(url2).format(
+    route_url = ''.join(result_url).format(
         uuid=uuid,
         type=route_type,
         format=GPX_ROUTE,
     )
-    track_url = ''.join(url2).format(
+    track_url = ''.join(result_url).format(
         uuid=uuid,
         type=route_type,
         format=GPX_TRACK,
