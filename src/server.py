@@ -45,7 +45,11 @@ def route(orig, dest, route, vehicle, attrs):
     car_attrs = get_vehicle_attrs_url(attributes) if attributes else ''
     # Build URLs for Routino (1st for router calling, 2nd for results)
     url1, url2 = build_urls(orig_lon, dest_lon, orig_lat, dest_lat, car_attrs)
-    first_url = ''.join(url1).format(type=route, speeds=speeds)
+    first_url = ''.join(url1).format(
+        type=route,
+        speeds=speeds,
+        vehicle=vehicle,
+    )
     uuid, status = requests.get(first_url).content.strip().split('\n')
     # Check if trip was successfully planned
     if status == 'OK':

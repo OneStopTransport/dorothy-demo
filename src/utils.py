@@ -97,7 +97,8 @@ def get_speeds_url_params(vehicle):
 
 def build_urls(lon1, lon2, lat1, lat2, attrs):
     """ Creates the two URLs needed for Routino """
-    router = ''.join(['router.cgi?transport=hgv;type={type};{speeds};', attrs])
+    router = 'router.cgi?transport={vehicle};type={type};{speeds}'
+    router_url = ''.join([router, attrs])
     coords_str = 'lon1={lon1};lon2={lon2};lat1={lat1};lat2={lat2}'.format(
         lon1=lon1, lon2=lon2,
         lat1=lat1, lat2=lat2,
