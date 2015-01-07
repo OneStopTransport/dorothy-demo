@@ -32,7 +32,7 @@ def build_urls(lon1, lon2, lat1, lat2, attrs):
         lat1=lat1, lat2=lat2,
     )
     # The two URLs needed are url1 and url2
-    url1 = [HOST, router, coords_str]
+    url1 = [HOST, router_url, coords_str]
     url2 = [HOST, 'results.cgi?uuid={uuid};type={type};format={format}']
     return url1, url2
 
@@ -54,9 +54,9 @@ def build_urls_detail(result_url, uuid, route_type):
 
 def create_vehicle_attrs(attrs):
     """ Returns a dictionary with the vehicle attributes """
-    if len(attrs) == (len(CAR_ATTRIBUTES) - 2):
-        elements = [attrib if attrib else 0 for attrib in attrs.split(',')]
-        elements.extend(1, 1)  # Adds oneway and turns restriction
+    elements = [attrib if attrib else 0 for attrib in attrs.split(',')]
+    if len(elements) == (len(CAR_ATTRIBUTES) - 2):
+        elements.extend([1, 1])  # Adds oneway and turns restriction
         return dict(zip(CAR_ATTRIBUTES, elements))
     return {}
 
