@@ -17,10 +17,12 @@ from consts import VEHICLES
 
 
 def get_speeds(vehicle_type):
-    """ Auxiliary method to help building the speed limits dictionary.
-        Values (speed limits) are taken from the legal site (IMTT), sorted
-        by road type and grouped by vehicle type.
-        This returns the array of speed limits of a given vehicle_type. """
+    """
+    Auxiliary method to help building the speed limits dictionary.
+    Values (speed limits) are taken from the legal site (IMTT), sorted
+    by road type and grouped by vehicle type.
+    This returns the array of speed limits of a given vehicle_type.
+    """
     car_speeds = {
         CAR: [120, 100, 100, 90, 90, 50, 50, 50, 10, 10, 0, 0, 0],
         GOODS: [110, 90, 90, 80, 80, 50, 50, 50, 10, 10, 0, 0, 0],
@@ -33,16 +35,16 @@ def get_speeds(vehicle_type):
 
 def create_speeds_dict():
     """
-        Returns the freshly-created and complex data structure:
-            - A dictionary of dictionaries...
-            - Where each key is a vehicle type and...
-            - Each value is a dict mapping road types with speed limits
-        e.g.
-            {
-                CAR: { MOTORWAY: 120, TRUNK: 100, PRIMARY: 100, ... },
-                GOODS: { MOTORWAY: 110, TRUNK: 90, PRIMARY: 90, ... },
-                ...
-            }
+    Returns the freshly-created and complex data structure:
+      - A dictionary of dictionaries...
+      - Where each key is a vehicle type and...
+      - Each value is a dict mapping road types with speed limits
+    e.g.
+    {
+      CAR: { MOTORWAY: 120, TRUNK: 100, PRIMARY: 100, ... },
+      GOODS: { MOTORWAY: 110, TRUNK: 90, PRIMARY: 90, ... },
+      ...
+    }
     """
     return {each: dict(zip(ROADS, get_speeds(each))) for each in VEHICLES}
 
