@@ -21,13 +21,13 @@ def index():
     return 'Hello world! Just to confirm your server is working :)'
 
 
-@app.route('/<orig_lon>,<orig_lat>/<dest_lon>,<dest_lat>/<route>/<vehicle>')
-def route(orig_lon, orig_lat, dest_lon, dest_lat, route, vehicle):
+@app.route('/<orig>/<dest>/<route>/<vehicle>')
+def route(orig, dest, route, vehicle):
     # Validate input coordinates before submitting to Routino
-    orig_lat, orig_lon, msg = validate_coords(orig_lat, orig_lon)
+    orig_lat, orig_lon, msg = validate_coords(orig)
     if msg != 'OK':
         return 'Error with origin coordinates: {msg}'.format(msg=msg)
-    dest_lat, dest_lon, message = validate_coords(dest_lat, dest_lon)
+    dest_lat, dest_lon, message = validate_coords(dest)
     if msg != 'OK':
         return 'Error with destination coordinates: {msg}'.format(msg=msg)
     # Validate input route type before submitting to Routino

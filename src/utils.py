@@ -52,14 +52,14 @@ def create_speeds_dict():
 SPEEDS = create_speeds_dict()
 
 
-def validate_coords(lat, lon):
+def validate_coords(coordinates):
     """ Validates a tuple of coordinates in datatype and range """
     try:
-        # Check if both variables are numbers
-        lat = float(lat)
-        lon = float(lon)
+        # Check if it's a tuple of numbers
+        lon, lat = coordinates.split(',')
+        lat, lon = float(lat), float(lon)
     except ValueError as error:
-        return (None, None, 'Invalid coordinates, expecting numbers')
+        return (None, None, 'Invalid coordinates, expecting tuple of numbers')
     # Check if coordinates are in range
     if (lat < -90) or (lat > 90):
         error = 'Invalid latitude: {lat}, should be between -90 and 90'
