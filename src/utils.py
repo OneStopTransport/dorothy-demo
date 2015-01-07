@@ -52,6 +52,21 @@ def create_speeds_dict():
 SPEEDS = create_speeds_dict()
 
 
+def create_vehicle_attrs(attrs):
+    """ Returns a dictionary with the vehicle attributes """
+    if len(attrs) == (len(CAR_ATTRIBUTES) - 2):
+        elements = [attrib if attrib else 0 for attrib in attrs.split(',')]
+        elements.extend(1, 1)  # Adds oneway and turns restriction
+        return dict(zip(CAR_ATTRIBUTES, elements))
+    return {}
+
+
+def get_vehicle_attrs_url(props):
+    """ Returns vehicle properties from dict as URL params for Routino """
+    param = '{key}={val};'
+    return ''.join([param.format(key=k, val=v) for k, v in props.items()])
+
+
 def validate_coords(coordinates):
     """ Validates a tuple of coordinates in datatype and range """
     try:
@@ -80,13 +95,15 @@ def get_speeds_url_params(vehicle):
     return ''
 
 
-def build_urls(lon1, lon2, lat1, lat2):
+def build_urls(lon1, lon2, lat1, lat2, attrs):
     """ Creates the two URLs needed for Routino """
+    router = ''.join(['router.cgi?transport=hgv;type={type};{speeds};', attrs])
     coords_str = 'lon1={lon1};lon2={lon2};lat1={lat1};lat2={lat2}'.format(
         lon1=lon1, lon2=lon2,
         lat1=lat1, lat2=lat2,
     )
-    url1 = [HOST, 'router.cgi?transport=hgv;type={type};{speeds}', coords_str]
+    # The two URLs needed are url1 and url2
+    url1 = [HOST, router, coords_str]
     url2 = [HOST, 'results.cgi?uuid={uuid};type={type};format={format}']
     return url1, url2
 
