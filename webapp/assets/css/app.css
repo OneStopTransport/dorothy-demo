@@ -30,6 +30,10 @@ input[type="radio"], input[type="checkbox"] {
 .input-label p {
   margin-bottom: 0px;
 }
+.modal-instructions {
+  text-align: center;
+  color: gray;
+}
 #sidebar {
   width: 250px;
   height: 100%;
