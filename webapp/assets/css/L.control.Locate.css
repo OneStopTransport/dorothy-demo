@@ -1,0 +1,58 @@
+/* Compatible with Leaflet 0.7 */
+
+.leaflet-control-locate {
+    width: 52px;
+    height: 52px;
+}
+
+.leaflet-touch .leaflet-bar-part-single {
+	-webkit-border-radius: 7px 7px 7px 7px;
+	        border-radius: 7px 7px 7px 7px;
+	border-bottom: none;
+}
+
+.leaflet-control-locate a {
+	background-image: url(../img/locate@2x.png);
+    background-size:156px 56px;
+	background-position: -2px -2px;
+    width: 52px;
+    height: 52px;
+}
+
+.leaflet-retina .leaflet-control-locate a {
+	background-image: url(../img/locate@2x.png);
+}
+
+.leaflet-touch .leaflet-control-locate a {
+	background-image: url(../img/locate_touch.png);
+}
+
+.leaflet-control-locate.requesting a {
+    background-size:36px 36px;
+	background-image: url(../img/spinner@2x.gif);
+	background-position: 50% 50%;
+}
+
+.leaflet-retina .leaflet-control-locate.requesting a {
+	background-image: url(../img/spinner@2x.gif);
+}
+
+.leaflet-control-locate.active a {
+	background-position: -54px -2px;
+    background-size:156px 56px;
+    width: 52px;
+    height: 52px;
+}
+
+.leaflet-control-locate.active.following a {
+	background-position: -105px -2px;
+    background-size:156px 56px;
+    width: 52px;
+    height: 52px;
+}
+
+.leaflet-touch .leaflet-control-locate {
+	box-shadow: none;
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+}
