@@ -1,17 +1,5 @@
 var map, featureList;
 
-$(document).ready(function() {
-  map.locate();
-  setupPlaces();
-});
-
-$(".dropdown-menu li a").click(function() {
-  var option = $(this).text();
-  updateVehicleProps(option);
-  $(this).parents(".btn-group").find('.selection').text(option);
-  $(this).parents(".btn-group").find('.selection').val(option);
-});
-
 /* Basemap Layers */
 var mapquestOSM = L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png", {
   maxZoom: 19,
@@ -146,13 +134,6 @@ var locateControl = L.control.locate({
   }
 }).addTo(map);
 
-var itineraryControl = L.easyButton('fa-flag-checkered', null, 'Control Itinerary', map, 'bottomright');
-var vehicleControl = L.easyButton('fa-truck', selectVehicleType, 'Vehicle Type', map, 'bottomleft');
-
-function selectVehicleType() {
-  $("#vehicleModal").modal("show");  
-};
-
 /* Larger screens get expanded layer control and visible sidebar */
 if (document.body.clientWidth <= 767) {
   var isCollapsed = true;
@@ -180,11 +161,3 @@ var groupedOverlays = {
 // var layerControl = L.control.groupedLayers(baseLayers, groupedOverlays, {
 //   collapsed: isCollapsed
 // }).addTo(map);
-
-
-function setupPlaces() {
-    fixButtons();
-    $("#loading").show();
-    $("#loading").hide();
-};
-
