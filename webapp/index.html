@@ -30,6 +30,28 @@
   <body>
 
     <div id="container">
+      <div id="sidebar" style="display:none;">
+        <div class="sidebar-wrapper">
+          <div class="panel panel-default" id="features">
+            <div class="panel-heading">
+              <h3 class="panel-title">Route instructions</h3>
+            </div>
+            <div class="sidebar-table">
+              <table class="table table-hover" id="feature-list">
+                <thead class="hidden">
+                  <tr>
+                    <th>Icon</th>
+                  <tr>
+                  <tr>
+                    <th>Description</th>
+                  <tr>
+                </thead>
+                <tbody class="list"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
       <div id="map"></div>
     </div>
     
@@ -76,7 +98,7 @@
                   </div><!--
                --><div class="col-xs-8 col-md-8 vcenter">
                       <div class="btn-group">
-                        <button class="btn btn-default btn-lg dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                        <button class="btn btn-default btn-lg dropdown-toggle" id="vehicle-choice" type="button" data-toggle="dropdown" aria-expanded="false">
                           <span class="selection">Goods</span> <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-large" role="menu">
@@ -135,7 +157,7 @@
                --><div class="col-xs-8 col-md-8 vcenter">
                       <div class="input-label">
                           <!-- <button type='button' class='btn btn-lg btn-danger' data-dismiss='modal'>Close</button> -->
-                          <button type='button' class='btn btn-lg btn-success' data-dismiss='modal' id='vehicle-props-save'>Save</button>
+                          <button type='button' class='btn btn-lg btn-success' data-dismiss='modal' id='vehicle-props-save' onclick="saveVehicleProps()">Save</button>
                       </div>
                   </div>
               </div>
