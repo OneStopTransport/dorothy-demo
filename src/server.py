@@ -29,6 +29,7 @@ def index():
 @app.route('/<orig>/<dest>/<route>/<vehicle>/<attrs>')
 def route(orig, dest, route, vehicle, attrs):
     # attrs is an optional parameter for the vehicle attributes
+    attributes = None
     if attrs is not None:
         # Create a dictionary from the received tuple
         attributes = create_vehicle_attrs(attrs)
