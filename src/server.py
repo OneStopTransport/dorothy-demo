@@ -2,6 +2,7 @@ import json
 
 import requests
 from flask import Flask
+from flask.ext.jsonpify import jsonify
 
 from consts import ROUTE_TYPES
 from utils import build_urls
@@ -65,10 +66,10 @@ def route(orig, dest, route, vehicle, attrs):
         route_gpx = parse_gpx_route(route_resp.content)
         track_gpx = parse_gpx_track(track_resp.content)
         # route is the step-by-step text, track is the polyline
-        return json.dumps({'route': route_gpx, 'track': track_gpx})
+        return jsonify({'route': route_gpx, 'track': track_gpx})
     else:
         # Inform an error occurred
-        return 'Error calling {url}'.format(url=first_url)
+        return jsonify('Error calling {url}'.format(url=first_url))
 
 
 if __name__ == '__main__':
