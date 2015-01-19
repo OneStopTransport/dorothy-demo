@@ -1,4 +1,11 @@
 var map, featureList;
+var userLocation;
+
+function setUserLocation(location) {
+  if (location != undefined || location != null) {
+    userLocation = location.latlng;
+  }
+};
 
 /* Basemap Layers */
 var mapquestOSM = L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png", {
@@ -132,7 +139,9 @@ var locateControl = L.control.locate({
     maximumAge: 10000,
     timeout: 10000
   }
-}).addTo(map);
+});
+
+map.addControl(locateControl).on('locationfound', setUserLocation);
 
 /* Larger screens get expanded layer control and visible sidebar */
 if (document.body.clientWidth <= 767) {
