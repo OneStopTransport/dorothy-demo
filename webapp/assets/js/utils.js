@@ -1,3 +1,12 @@
+// Weight, Width, Height, Length, grouped by vehicle type
+var vehicleProps = {
+  'Light': [3, 2.5, 2, 4],
+  'Medium': [5, 2.5, 2.5, 6],
+  'Heavy': [20, 3, 2.5, 12],
+};
+
+// Default vehicle is a Goods Vehicle
+var currentVehicle = vehicleProps['Light'].join();
 $(document).ready(function() {
   map.locate();
   updateVehicleProps($('#vehicle-choice').find(".selection").text());
@@ -16,16 +25,7 @@ function controlItinerary() {
 
 };
 
-// Weight, Width, Height, Length, grouped by vehicle type
-var vehicleProps = {
-    'Goods':  [5, 2.5, 2, 5],
-    'Goods + Trailer': [7.5, 2.5, 2, 7],
-    'Heavy Goods (HGV)': [10, 3, 2.5, 6],
-    'HGV + Trailer': [15, 3, 2.5, 10],
 };
-
-// Default vehicle is a Goods Vehicle
-var currentVehicle = vehicleProps['Goods'].join();
 
 // Function to change value of input
 $.fn.changeVal = function (v) {
@@ -45,7 +45,7 @@ $(".dropdown-menu li a").click(function() {
 function updateVehicleProps(option) {
   // Updates the image in modal window
   var attrs = vehicleProps[option];
-  var choice = option.indexOf("HGV") >= 0 ? "assets/img/vehicles/HGV.png" : "assets/img/vehicles/Goods.png";
+  var choice = "assets/img/vehicles/" + option.toLowerCase() + ".png";
   // Updates the attributes in the form
   $("#vehicle-type-img")[0].src = choice;
   $("#weight-input").changeVal(attrs[0]);

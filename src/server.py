@@ -5,6 +5,7 @@ from flask import Flask
 from flask.ext.jsonpify import jsonify
 
 from consts import ROUTE_TYPES
+from consts import SIZES
 from utils import build_urls
 from utils import build_urls_detail
 from utils import create_vehicle_attrs
@@ -25,9 +26,9 @@ def index():
     return 'Hello world! Just to confirm your server is working :)'
 
 
-@app.route('/<orig>/<dest>/<route>/<vehicle>', defaults={'attrs': None})
-@app.route('/<orig>/<dest>/<route>/<vehicle>/<attrs>')
-def route(orig, dest, route, vehicle, attrs):
+@app.route('/<orig>/<dest>/<route>/<size>', defaults={'attrs': None})
+@app.route('/<orig>/<dest>/<route>/<size>/<attrs>')
+def route(orig, dest, route, size, attrs):
     # attrs is an optional parameter for the vehicle attributes
     attributes = None
     if attrs is not None:
@@ -43,6 +44,8 @@ def route(orig, dest, route, vehicle, attrs):
     # Validate input route type before submitting to Routino
     if str(route).lower() not in ROUTE_TYPES:
         return 'Error with given route type. Allowed: quickest/shortest'
+    # Get vehicle type given the size
+    vehicle = SIZES[size]
     # Get speed limits and road properties preferences for the given vehicle
     speeds = get_speeds_url_params(vehicle)
     props = get_properties_url_params(vehicle)

@@ -30,6 +30,18 @@ HGV_TRAILER = 'hgv-trailer'
 # Vehicle types on a list to help build the speed / properties dictionaries
 VEHICLES = [CAR, GOODS, GOODS_TRAILER, HGV, HGV_TRAILER]
 
+# Vehicle Sizes
+LIGHT = 'light'
+MEDIUM = 'medium'
+HEAVY = 'heavy'
+
+# Translation
+SIZES = {
+    LIGHT: GOODS,
+    MEDIUM: GOODS,
+    HEAVY: HGV
+}
+
 
 #####################################
 # VEHICLE ATTRIBUTES + RESTRICTIONS #
