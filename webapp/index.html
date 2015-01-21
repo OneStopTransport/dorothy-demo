@@ -149,6 +149,78 @@
         </div>
       </div>
     </div>
+    
+    <div class="modal fade" id="routePlanModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Destination Confirmation</h4>
+          </div>
+          <div class="modal-body" id="vehicle-properties">
+              <div class="row input-row-large">
+                  <div class="col-xs-12 col-md-12 vcenter">
+                    <p class="modal-instructions">Please confirm the following destination:</p>
+                  </div>
+              </div>
+              <div class="row input-row-large">
+                  <div class="col-xs-4 col-md-4 vcenter">
+                      <p><strong>Load/Unload Point:</strong></p>
+                  </div><!--
+               --><div class="col-xs-8 col-md-8 vcenter">
+                      <div class="btn-group">
+                        <button class="btn btn-default btn-lg dropdown-toggle" id="loadpoint-choice" type="button" data-toggle="dropdown" aria-expanded="false">
+                          <span class="selection" id="point-selection"></span> <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-large large-ul" role="menu" id="point-selection-list">
+                        </ul>
+                      </div>
+                  </div>
+              </div>
+              <div class="row input-row-large">
+                  <div class="col-xs-4 col-md-4 vcenter input-label">
+                      <p><strong>Coordinates:</strong></p>
+                  </div><!--
+               --><div class="col-xs-8 col-md-8 vcenter input-label">
+                      <p id="loadpoint-coords" class="modal-text-value"></p>
+                  </div>
+              </div>
+              <div class="row input-row-large">
+                  <div class="col-xs-4 col-md-4 vcenter input-label">
+                      <p><strong>Street:</strong></p>
+                  </div><!--
+               --><div class="col-xs-8 col-md-8 vcenter input-label">
+                      <p id="loadpoint-street" class="modal-text-value"></p>
+                  </div>
+              </div>
+              <div class="row input-row-large">
+                  <div class="col-xs-4 col-md-4 vcenter input-label">
+                      <p><strong>Parish:</strong></p>
+                  </div><!--
+               --><div class="col-xs-8 col-md-8 vcenter input-label">
+                      <p id="loadpoint-parish" class="modal-text-value"></p>
+                  </div>
+              </div>
+              <div class="row input-row-large">
+                  <div class="col-xs-4 col-md-4 vcenter input-label">
+                      <p><strong>Schedule:</strong></p>
+                  </div><!--
+               --><div class="col-xs-8 col-md-8 vcenter input-label">
+                      <p id="loadpoint-schedule" class="modal-text-value"></p>
+                  </div>
+              </div>
+              <div class="row input-row-large">
+                  <div class="col-xs-4 col-md-4 vcenter input-label"></div><!--
+               --><div class="col-xs-8 col-md-8 vcenter">
+                      <div class="input-label">
+                          <button type='button' class='btn btn-lg btn-success' data-dismiss='modal' id='vehicle-props-save' onclick="planItinerary()">Confirm</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>

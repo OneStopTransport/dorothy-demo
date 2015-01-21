@@ -9,6 +9,10 @@ body {
 input[type="radio"], input[type="checkbox"] {
   margin: 0;
 }
+.large-ul {
+  max-height: 250px;
+  overflow-y: scroll;
+}
 .vcenter {
   display: inline-block;
   vertical-align: middle;
@@ -33,6 +37,9 @@ input[type="radio"], input[type="checkbox"] {
 .modal-instructions {
   text-align: center;
   color: gray;
+}
+.modal-text-value {
+  text-align: left;
 }
 #sidebar {
   width: 250px;
@@ -87,7 +94,7 @@ input[type="radio"], input[type="checkbox"] {
 .sidebar-table {
   position: absolute;
   width: 100%;
-  top: 124px;
+  top: 146px;
   bottom: 0px;
   overflow: auto;
 }
