@@ -115,11 +115,15 @@ def parse_gpx_route(response):
 def parse_gpx_track(response):
     """ Receives gpx-track response from Routino and returns points list """
     root = ET.fromstring(response)
+    track_result = {}
     # Get attributes by name + namespace (the schema is public)
     namespace = root.tag.replace('gpx', '')
-    trkpt_name = ''.join([namespace, 'trkpt'])
-    # Returns a list of dictionaries with latitude and longitude
-    return [trkpt.attrib for trkpt in root.iter(trkpt_name)]
+    trkseg_name = ''.join([namespace, 'trkseg'])
+    for seg_index, trkseg in enumerate(root.iter(trkseg_name)):
+        track_result[seg_index] = [trkpt.attrib for trkpt in trkseg]
+    # Returns result, which is a list of segments
+    # Each segment is a list of points (dicts with latitude and longitude)
+    return track_result
 
 
 def validate_coords(coordinates):
