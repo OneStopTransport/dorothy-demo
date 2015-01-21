@@ -5,12 +5,15 @@ from consts import VEHICLES
 from consts import GPX_ROUTE
 from consts import GPX_TRACK
 from consts import HOST
-from consts import create_properties_dict
+from consts import create_road_preferences_dict
+from consts import create_road_properties_dict
 from consts import create_speeds_dict
 
 
+# Create the complex data structure with road type preferences by vehicle
+PREFERENCES = create_road_preferences_dict()
 # Create the complex data structure with road properties preferences by vehicle
-PROPERTIES = create_properties_dict()
+PROPERTIES = create_road_properties_dict()
 # Create the complex data structure with Portugal speed limits
 SPEEDS = create_speeds_dict()
 
@@ -25,8 +28,8 @@ def build_point(rtept, tag_name, tag_desc):
 
 def build_urls(lon1, lon2, lat1, lat2, attrs):
     """ Creates the two URLs needed for Routino """
-    router = 'router.cgi?transport={vehicle};type={type};{speeds}{props}'
-    router_url = ''.join([router, attrs])
+    url = 'router.cgi?transport={vehicle};type={type};{prefs}{props}{speeds}'
+    router_url = ''.join([url, attrs])
     coords_str = 'lon1={lon1};lon2={lon2};lat1={lat1};lat2={lat2}'.format(
         lon1=lon1, lon2=lon2,
         lat1=lat1, lat2=lat2,
@@ -65,7 +68,16 @@ def create_vehicle_attrs(attrs):
         return {}
 
 
-def get_properties_url_params(vehicle):
+def get_road_preferences_url_params(vehicle):
+    """ Returns the URL parameters with the received vehicle properties """
+    if vehicle in VEHICLES:
+        param = 'highway-{key}={val};'
+        prefs = [(key, val) for key, val in PREFERENCES[vehicle].items()]
+        return ''.join([param.format(key=key, val=val) for key, val in prefs])
+    return ''
+
+
+def get_road_properties_url_params(vehicle):
     """ Returns the URL parameters with the received vehicle properties """
     if vehicle in VEHICLES:
         param = 'property-{key}={val};'

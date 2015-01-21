@@ -9,8 +9,9 @@ from consts import SIZES
 from utils import build_urls
 from utils import build_urls_detail
 from utils import create_vehicle_attrs
+from utils import get_road_preferences_url_params
+from utils import get_road_properties_url_params
 from utils import get_speeds_url_params
-from utils import get_properties_url_params
 from utils import get_vehicle_attrs_url
 from utils import parse_gpx_route
 from utils import parse_gpx_track
@@ -47,15 +48,17 @@ def route(orig, dest, route, size, attrs):
     # Get vehicle type given the size
     vehicle = SIZES[size]
     # Get speed limits and road properties preferences for the given vehicle
+    prefs = get_road_preferences_url_params(vehicle)
+    props = get_road_properties_url_params(vehicle)
     speeds = get_speeds_url_params(vehicle)
-    props = get_properties_url_params(vehicle)
     car_attrs = get_vehicle_attrs_url(attributes) if attributes else ''
     # Build URLs for Routino (1st for router calling, 2nd for results)
     url1, url2 = build_urls(orig_lon, dest_lon, orig_lat, dest_lat, car_attrs)
     first_url = ''.join(url1).format(
-        type=route,
-        speeds=speeds,
+        prefs=prefs,
         props=props,
+        speeds=speeds,
+        type=route,
         vehicle=vehicle,
     )
     uuid, status = requests.get(first_url).content.strip().split('\n')

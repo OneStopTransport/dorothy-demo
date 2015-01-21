@@ -108,7 +108,52 @@ ROADS = [
 ####################################################
 
 
-def get_properties(vehicle_type):
+def get_road_prefs(vehicle_type):
+    """
+    Selects the %% preference for using each particular road type
+    http://wiki.openstreetmap.org/wiki/Key:highway
+    The value of <highway> can be selected from:
+      * motorway = Motorway (high-way)
+      * trunk = Trunk (major road)
+      * primary = Primary (main recommended roads - single/dual carriageway)
+      * secondary = Secondary (important but secondary to main arterial routes)
+      * tertiary = Tertiary (connect minor streets to major roads)
+      * unclassified = Least important in standard road network)
+      * residential = Smaller road for access to residential properties
+      * service = Smaller road for access to non-residential properties
+      * track = Agricultural or forestry uses
+      * cycleway = Non-specific path usable by cyclists
+      * path = Non-specific path usable by cyclists
+      * steps = For flights of steps (stairs) on footways
+      * ferry = For roads that are accessed by ferryboat
+    """
+    road_prefs = {
+        CAR: [100, 100, 90, 80, 70, 60, 50, 80, 0, 0, 0, 0, 0],
+        GOODS: [100, 100, 90, 80, 70, 60, 50, 80, 0, 0, 0, 0, 0],
+        GOODS_TRAILER: [100, 100, 90, 80, 70, 60, 50, 80, 0, 0, 0, 0, 0],
+        HGV: [100, 100, 80, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        HGV_TRAILER: [100, 100, 80, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    }
+    return road_prefs[vehicle_type] if vehicle_type in VEHICLES else []
+
+
+def create_road_preferences_dict():
+    """
+    Returns the freshly-created and complex data structure:
+      - A dictionary of dictionaries...
+      - Where each key is a vehicle type and...
+      - Each value is a dict mapping road types with speed limits
+      e.g.
+      {
+        CAR: { MOTORWAY: 100, TRUNK: 100, PRIMARY: 90, ... },
+        GOODS: { MOTORWAY: 100, TRUNK: 100, PRIMARY: 90, ... },
+        ...
+      }
+    """
+    return {each: dict(zip(ROADS, get_road_prefs(each))) for each in VEHICLES}
+
+
+def get_road_props(vehicle_type):
     """
     Selects the %% preference for using each particular highway property
     The value of <property> can be selected from:
@@ -124,13 +169,13 @@ def get_properties(vehicle_type):
         CAR: [100, 60, 50, 50, 45, 45],
         GOODS: [100, 60, 50, 50, 45, 45],
         GOODS_TRAILER: [100, 70, 50, 50, 45, 45],
-        HGV: [100, 85, 50, 25, 45, 25],
-        HGV_TRAILER: [100, 85, 25, 25, 45, 25],
+        HGV: [100, 100, 50, 25, 10, 5],
+        HGV_TRAILER: [100, 100, 50, 25, 10, 5],
     }
     return car_props[vehicle_type] if vehicle_type in VEHICLES else []
 
 
-def create_properties_dict():
+def create_road_properties_dict():
     """
     Returns the freshly-created and complex data structure:
       - A dictionary of dictionaries...
@@ -143,7 +188,7 @@ def create_properties_dict():
       ...
     }
     """
-    return {each: dict(zip(PROPS, get_properties(each))) for each in VEHICLES}
+    return {each: dict(zip(PROPS, get_road_props(each))) for each in VEHICLES}
 
 
 def get_speeds(vehicle_type):
