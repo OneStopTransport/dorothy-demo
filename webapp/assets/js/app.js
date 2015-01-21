@@ -1,6 +1,11 @@
 var map, featureList;
 var userLocation;
 
+$("#sidebar-hide-btn").click(function() {
+  $('#sidebar').hide();
+  map.invalidateSize();
+});
+
 function setUserLocation(location) {
   if (location != undefined || location != null) {
     userLocation = location.latlng;

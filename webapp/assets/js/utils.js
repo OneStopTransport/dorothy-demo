@@ -7,6 +7,7 @@ var vehicleProps = {
 
 // Default vehicle is a Goods Vehicle
 var currentVehicle = vehicleProps['Light'].join();
+var sidebarControl = L.easyButton('fa-navicon', toggleSidebar, 'Show Itinerary', map, 'topleft');
 $(document).ready(function() {
   map.locate();
   updateVehicleProps($('#vehicle-choice').find(".selection").text());
@@ -21,10 +22,11 @@ function selectVehicleType() {
   $("#vehicleModal").modal("show");
 };
 
-function controlItinerary() {
-
+function toggleSidebar() {
+  $("#sidebar").toggle();
 };
 
+function controlItinerary() {
 };
 
 // Function to change value of input
