@@ -39,7 +39,7 @@ HEAVY = 'heavy'
 SIZES = {
     LIGHT: GOODS,
     MEDIUM: GOODS,
-    HEAVY: HGV
+    HEAVY: HGV,
 }
 
 

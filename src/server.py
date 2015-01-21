@@ -4,6 +4,7 @@ import requests
 from flask import Flask
 from flask.ext.jsonpify import jsonify
 
+from consts import GOODS
 from consts import ROUTE_TYPES
 from consts import SIZES
 from utils import build_urls
@@ -46,7 +47,7 @@ def route(orig, dest, route, size, attrs):
     if str(route).lower() not in ROUTE_TYPES:
         return 'Error with given route type. Allowed: quickest/shortest'
     # Get vehicle type given the size
-    vehicle = SIZES[size]
+    vehicle = SIZES.get(size, GOODS)
     # Get speed limits and road properties preferences for the given vehicle
     prefs = get_road_preferences_url_params(vehicle)
     props = get_road_properties_url_params(vehicle)

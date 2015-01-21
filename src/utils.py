@@ -9,7 +9,6 @@ from consts import create_road_preferences_dict
 from consts import create_road_properties_dict
 from consts import create_speeds_dict
 
-
 # Create the complex data structure with road type preferences by vehicle
 PREFERENCES = create_road_preferences_dict()
 # Create the complex data structure with road properties preferences by vehicle
@@ -59,7 +58,7 @@ def create_vehicle_attrs(attrs):
     """ Returns a dictionary with the vehicle attributes """
     try:
         # Assert all values are integers, if not, discard everything
-        attribs = [float(attrib) if attrib else 0 for attrib in attrs.split(',')]
+        attribs = [float(attr) if attr else 0 for attr in attrs.split(',')]
         if len(attribs) == (len(CAR_ATTRIBUTES) - 2):
             attribs.extend([1, 1])  # Adds oneway and turns restriction
             return dict(zip(CAR_ATTRIBUTES, attribs))
