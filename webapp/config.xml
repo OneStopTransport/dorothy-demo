@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" id="http://widgets.tice.ipn.pt/dorothy" version="1.0.1" fullscreen="true">
+   <name short="Dorothy" xml:lang="en">Dorothy</name>
+
+   <description>
+       Demo Application to demonstrate the integration of One.Stop.Transport with Dorothy.
+   </description>
+
+   <author>Instituto Pedro Nunes</author>
+   <access origin="*"/>
+   <content src="index.html" />
+   <icon src="dorothy_logo.png" />
+</widget>
