@@ -1,0 +1,29 @@
+{
+  "plan": [
+    {
+      "id": "1449",
+      "coordinates": "38.71076, -9.14164",
+      "street": "Rua Serpa Pinto",
+      "parish": "Santa Maria Maior",
+      "schedule": "20-11H"
+    },{
+      "id": "1435",
+      "coordinates": "38.71245, -9.13884",
+      "street": "Rua dos Sapateiros",
+      "parish": "Santa Maria Maior",
+      "schedule": "7-20H"
+    },{
+      "id": "1536",
+      "coordinates": "38.71106, -9.14198",
+      "street": "Travessa da Trindade",
+      "parish": "Santa Maria Maior",
+      "schedule": "7-20H"
+    },{
+      "id": "1537",
+      "coordinates": "38.70917, -9.14193",
+      "street": "Largo do Picadeiro",
+      "parish": "Santa Maria Maior",
+      "schedule": "24 hours"
+    }
+  ]
+}

@@ -11,6 +11,8 @@ ROUTE_TYPES = [QUICK, SHORT]
 # Routino response formats (there are more)
 GPX_TRACK = 'gpx-track'
 GPX_ROUTE = 'gpx-route'
+# JSON File path with Optimal plan
+JSON_FILE = 'data/plan.json'
 
 
 #############################################################

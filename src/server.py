@@ -1,10 +1,12 @@
 import json
+import os
 
 import requests
 from flask import Flask
 from flask.ext.jsonpify import jsonify
 
 from consts import GOODS
+from consts import JSON_FILE
 from consts import ROUTE_TYPES
 from consts import SIZES
 from utils import build_urls
@@ -78,6 +80,18 @@ def route(orig, dest, route, size, attrs):
     else:
         # Inform an error occurred
         return jsonify('Error calling {url}'.format(url=first_url))
+
+
+@app.route('/plan')
+def plan():
+    current_dir = os.path.dirname(__file__)
+    file_path = os.path.join(current_dir, '..', JSON_FILE)
+    try:
+        with open(file_path) as file:
+            json_file = json.load(file)
+        return jsonify(json_file)
+    except (IOError, ValueError) as e:
+        return jsonify('Error: no optimal plan was found')
 
 
 if __name__ == '__main__':
