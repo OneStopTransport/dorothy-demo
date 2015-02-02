@@ -10,17 +10,19 @@ var currentVehicle = vehicleProps['Light'].join();
 
 // To be used when planning and following itineraries
 var currentDestination = null;
+var currentOptimal = false;
 // Map layer to add markers and polygons
 var routingLayer = new L.LayerGroup();
 
 // Loading points (POIs)
 var loadingPoints = [];
+var optimalPoints = [];
 var checkedInPoints = [];
 
 // Buttons for the vehicle choice and for the itineraries
 var sidebarControl = L.easyButton('fa-navicon', toggleSidebar, 'Show Itinerary', map, 'topleft');
 var vehicleControl = L.easyButton('fa-truck', selectVehicleType, 'Vehicle Type', map, 'bottomleft');
-var itinControl = L.easyButton('fa-flag-checkered', controlItinerary, 'Control Itinerary', map, 'bottomright');
+var itinControl = L.easyButton('fa-flag-checkered', getNextPOI, 'Control Itinerary', map, 'topright');
 
 // When routino fails plan, we need to retry its API but
 // only 3 times, in order not to enter an infinite loop
@@ -38,15 +40,9 @@ $(document).ready(function() {
   updateVehicleProps($('#vehicle-choice').find(".selection").text());
   fixButtons();
   setupPlaces();
+  getOptimalPlan();
 });
 
-function getPoint(pointId) {
-  for(var index in loadingPoints) {
-    if (loadingPoints[index].name === pointId) {
-      return loadingPoints[index];
-    }  
-  }
-};
 // Updates the selected value in vehicle dropdown
 $(".dropdown-menu li a").click(function() {
   var option = $(this).text();
@@ -67,17 +63,16 @@ function controlItinerary() {
   getNextPOI();
 };
 
-function planItinerary() {
+// Prepares every attribute needed for the itinerary planning API
+// optimal is a boolean variable for itinerary tab selection (manual/optimal)
+function planItinerary(optimal) {
   locateControl.locate();
   var vehicleType = $('#vehicle-choice').find(".selection").text().toLowerCase();
-  var pointId = $("#point-selection").text();
-  pointId = pointId.substring(1, pointId.indexOf("-") - 1);
-  var point = getPoint(pointId);
-  $("#feature-list tbody").html("");
-  $("#route-description").text("No itinerary information available yet.");
-  routingLayer.clearLayers();
-  routingLayer.addLayer(marker);
+  var selectionId = optimal === true ? "#opt-point-selection" : "#point-selection";
+  var pointId = $(selectionId).text().substring(1, $(selectionId).text().indexOf("-")-1);
+  var point = getPoint(pointId, false);
   var coordinates = point.geom_feature.coordinates;
+  var schedule = optimal === true ? point.schedule : point.metadata['Horario'];
   var destMarker = L.AwesomeMarkers.icon({
     icon: 'map-marker',
     prefix: 'fa',
@@ -86,14 +81,16 @@ function planItinerary() {
   if(map.hasLayer(destinationMarker)) {
     map.removeLayer(destinationMarker);
   }
+  currentOptimal = optimal;
   currentDestination = [parseFloat(coordinates[1]), parseFloat(coordinates[0])];
   destinationMarker = L.marker(currentDestination, {
     icon: destMarker,
   });
+  destinationMarker.bindPopup("<b>Load/Unload #" + pointId + "</b><br><b>Street:</b> " + point.street.name + "<br><b>Schedule:</b> " + schedule).openPopup();
   map.addLayer(destinationMarker);
   getBestItinerary(currentDestination, vehicleType);
   map.invalidateSize();
-}
+};
 
 
 // By choosing a vehicle type in the form, fill it with
@@ -110,20 +107,41 @@ function updateVehicleProps(option) {
   $("#length-input").changeVal(attrs[3]);
 };
 
+// Returns the load/unload point attributes given its ID
+function getPoint(pointId, optimal) {
+  var array = optimal === true ? optimalPoints : loadingPoints;
+  for (var index in array) {
+    if (array[index].name === pointId) {
+      return array[index];
+    }
+  }
+};
+
 // By choosing a vehicle type in the form, fill it with
 // values from the dictionary vehicleProps
-function updatePointProps(option) {
-  var point = getPoint(option);
-  var coords, street, parish, municipality, metadata
-  coords = prettyCoords(point.geom_feature.coordinates);
-  street = point.street.name;
-  parish = point.parish.name;
-  metadata = point.metadata;
+function updatePointProps(option, optimal) {
+  var coords, street, parish, municipality, metadata, point;
+  var point = getPoint(option, optimal);
   // Updates the modal box with the details
-  $("#loadpoint-coords").text(coords);
-  $("#loadpoint-street").text(street);
-  $("#loadpoint-parish").text(parish);
-  $("#loadpoint-schedule").text(metadata['Horario'].replace('horas', 'hours'));
+  if(optimal === true) {
+    coords = point.coordinates;
+    street = point.street;
+    parish = point.parish;
+    metadata = point.schedule;
+    $("#loadpoint-coords-opt").text(coords);
+    $("#loadpoint-street-opt").text(street);
+    $("#loadpoint-parish-opt").text(parish);
+    $("#loadpoint-schedule-opt").text(metadata.replace('horas', 'hours'));
+  } else {
+    coords = prettyCoords(point.geom_feature.coordinates);
+    street = point.street.name;
+    parish = point.parish.name;
+    metadata = point.metadata;
+    $("#loadpoint-coords").text(coords);
+    $("#loadpoint-street").text(street);
+    $("#loadpoint-parish").text(parish);
+    $("#loadpoint-schedule").text(metadata['Horario'].replace('horas', 'hours'));
+  }
 };
 
 // Updates the string to be sent to Routino API
@@ -177,10 +195,10 @@ function getNextPOI() {
   while(isNewPlace == false) {
     index = Math.floor(Math.random() * loadingPoints.length);
     poiName = loadingPoints[index].name;
-    updatePointProps(poiName);
+    updatePointProps(poiName, false);
     if(checkedInPoints.indexOf(poiName) < 0) {
       isNewPlace = true;
-      // checkedInPoints.push(poi_id);
+      checkedInPoints.push(poiName);
     }
   }
   var option = "#" + poiName + " - " + loadingPoints[index].street.name;
@@ -224,7 +242,7 @@ function setupPlaces() {
       $(".dropdown-menu li a.point-choice").click(function() {
         var option = $(this).text();
         var pointId = option.substring(1, option.indexOf("-") - 1);
-        updatePointProps(pointId);
+        updatePointProps(pointId, false);
         $(this).parents(".btn-group").find('.selection').text(option);
         $(this).parents(".btn-group").find('.selection').val(option);
       });
@@ -287,6 +305,38 @@ function getBestItinerary(destination, vehicleType) {
     }
   });
 };
+
+// Calls Flask server API to get the optimal plan from logistics
+function getOptimalPlan() {
+  $("#loading").show();
+  $.ajax({
+    // TODO Replace with your Flask instance server URL
+    url: 'http://localhost:5000/plan',
+    url: 'https://routino.ost.pt/api/plan',
+    dataType: 'jsonp',
+    data: {},
+    success: function(income) {
+      var pointsList = [];
+      var selectionList = $("#opt-point-selection-list");
+      optimalPoints = $.parseJSON(JSON.stringify(income.plan));
+      $.each(optimalPoints, function(i) {
+        var pointName = "#" + optimalPoints[i].name + " - " + optimalPoints[i].street;
+        var li = $('<li/>').addClass('drop-item-large').appendTo(selectionList);
+        var link = $('<a/>').addClass('opt-loadpoint-choice').text(pointName).appendTo(li);
+      });
+      // Updates the selected value in vehicle dropdown
+      $(".dropdown-menu li a.opt-loadpoint-choice").click(function() {
+        var option = $(this).text();
+        var pointId = option.substring(1, option.indexOf("-") - 1);
+        updatePointProps(pointId, true);
+        $(this).parents(".btn-group").find('.selection').text(option);
+        $(this).parents(".btn-group").find('.selection').val(option);
+      });
+      var point = optimalPoints[0]
+      var pointName = "#" + point.name + " - " + point.street;
+      updatePointProps(point.name, true);
+      $("#opt-loadpoint-choice").find('.selection').text(pointName);
+      $("#opt-loadpoint-choice").find('.selection').val(pointName);
       $("#loading").hide();
     },
     error: function(data) {
