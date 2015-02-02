@@ -8,6 +8,8 @@ var vehicleProps = {
 // Default vehicle is a Goods Vehicle
 var currentVehicle = vehicleProps['Light'].join();
 
+// To be used when planning and following itineraries
+var currentDestination = null;
 // Map layer to add markers and polygons
 var routingLayer = new L.LayerGroup();
 
@@ -26,6 +28,7 @@ $.fn.changeVal = function (v) {
   return $(this).val(v).trigger("change");
 };
 
+// Called when browser page finishes loading
 $(document).ready(function() {
   locateControl.locate();
   map.addLayer(routingLayer);
@@ -41,6 +44,13 @@ function getPoint(pointId) {
     }  
   }
 };
+// Updates the selected value in vehicle dropdown
+$(".dropdown-menu li a").click(function() {
+  var option = $(this).text();
+  updateVehicleProps(option);
+  $(this).parents(".btn-group").find('.selection').text(option);
+  $(this).parents(".btn-group").find('.selection').val(option);
+});
 
 function selectVehicleType() {
   $("#vehicleModal").modal("show");
@@ -60,24 +70,18 @@ function planItinerary() {
   var pointId = $("#point-selection").text();
   pointId = pointId.substring(1, pointId.indexOf("-") - 1);
   var point = getPoint(pointId);
-  var coords = [point.geom_feature.coordinates[1], point.geom_feature.coordinates[0]];
   var marker = L.marker(coords);
   marker.bindPopup("<b>Load/Unload #" + pointId + "</b><br><b>Street:</b> " + point.street.name + "<br><b>Schedule:</b> " + point.metadata['Horario']).openPopup();
   $("#feature-list tbody").html("");
   $("#route-description").text("No itinerary information available yet.");
   routingLayer.clearLayers();
   routingLayer.addLayer(marker);
-  callRoutinoAPI(coords, vehicleType);
+  var coordinates = point.geom_feature.coordinates;
+  currentDestination = [parseFloat(coordinates[1]), parseFloat(coordinates[0])];
+  getBestItinerary(currentDestination, vehicleType);
   map.invalidateSize();
 }
 
-// Updates the selected value in vehicle dropdown
-$(".dropdown-menu li a").click(function() {
-  var option = $(this).text();
-  updateVehicleProps(option);
-  $(this).parents(".btn-group").find('.selection').text(option);
-  $(this).parents(".btn-group").find('.selection').val(option);
-});
 
 // By choosing a vehicle type in the form, fill it with
 // values from the dictionary vehicleProps
@@ -137,20 +141,21 @@ function fixButtons() {
   var icons = document.getElementsByClassName('button-icon');
   for (var index in icons) {
     if (icons[index].children) {
-      icons[index].style['font-size'] = '30px';
-      icons[index].style['vertical-align'] = 'middle';
-      icons[index].style['line-height'] = 'inherit';
+      icons[index].style.fontSize = '32px';
+      icons[index].style.padding = '10px';
+      icons[index].style.verticalAlign = 'middle';
     }
   };
 };
 
-// Returns string with lat,lon as a tuple string with 5 decimal points 
+// Returns string with lat,lon as a tuple string with 5 decimal points
 function prettyCoords(coords) {
   var response = coords[1].toFixed(5) + ", " + coords[0].toFixed(5);
   return response;
 };
 
 // Function to call OST API and fetch Lisbon Loading POIs
+// Selects a random point from the list and marks it as checked
 function getNextPOI() {
   var index, poi_id;
   var isNewPlace = false;
@@ -173,6 +178,7 @@ function getNextPOI() {
 };
 
 // Process the itinerary step-by-step information
+// Processes the itinerary step-by-step information
 function writeStepInfo(steps) {
   $("#route-description").text("Your itinerary has been planned. Here are the instructions:");
   for(var index in steps) {
@@ -219,10 +225,10 @@ function setupPlaces() {
 };
 
 // Calls Routino API and draws result on map
-function callRoutinoAPI(destination, vehicleType) {
   var host = "http://localhost:5000/";  // Replace with your Flask instance host
   var url = host + userLocation.lng + "," + userLocation.lat + "/" + destination[1] + "," + destination[0] + "/quickest/" + vehicleType + '/' +  currentVehicle;
   var itinerary = null;
+function getBestItinerary(destination, vehicleType) {
   var steps = null;
   $("#loading").show();
   $.ajax({
