@@ -24,6 +24,7 @@ var checkedInPoints = [];
 
 // Buttons for the vehicle choice and for the itineraries
 var sidebarControl = L.easyButton('fa-navicon', toggleSidebar, 'Show Itinerary', map, 'topleft');
+var helpControl = L.easyButton('fa-question', showModalWindow, 'Show Help', map, 'topright');
 var vehicleControl = L.easyButton('fa-truck', showModalWindow, 'Vehicle Type', map, 'topright');
 var itinControl = L.easyButton('fa-flag-checkered', getNextPOI, 'Control Itinerary', map, 'topright');
 var recalcControl = L.easyButton('fa-refresh', recalculateItinerary, 'Recalculate Itinerary', map, 'topright');
