@@ -82,6 +82,9 @@ function toggleSidebar() {
 function clearItinerary() {
   // Removes polylines from routing layer
   // and table rows from sidebar (step-by-step)
+  if(map.hasLayer(destinationMarker)) {
+    map.removeLayer(destinationMarker);
+  }
   map.removeLayer(locationMarker);
   routingLayer.clearLayers();
   locRefresh.style["display"] = "none";
