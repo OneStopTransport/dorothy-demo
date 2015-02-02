@@ -28,6 +28,10 @@ input[type="radio"], input[type="checkbox"] {
   padding-top: 10px;
   padding-bottom: 10px;
 }
+.selected-step {
+  background-color: lightgray;
+  font-weight: bold;
+}
 .input-label {
   text-align: right;
 }

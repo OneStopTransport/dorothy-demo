@@ -11,8 +11,11 @@ var currentVehicle = vehicleProps['Light'].join();
 // To be used when planning and following itineraries
 var currentDestination = null;
 var currentOptimal = false;
+var currentStep = 0;
+
 // Map layer to add markers and polygons
 var routingLayer = new L.LayerGroup();
+var stepsLayer = [];
 
 // Loading points (POIs)
 var loadingPoints = [];
@@ -21,7 +24,7 @@ var checkedInPoints = [];
 
 // Buttons for the vehicle choice and for the itineraries
 var sidebarControl = L.easyButton('fa-navicon', toggleSidebar, 'Show Itinerary', map, 'topleft');
-var vehicleControl = L.easyButton('fa-truck', selectVehicleType, 'Vehicle Type', map, 'bottomleft');
+var vehicleControl = L.easyButton('fa-truck', showModalWindow, 'Vehicle Type', map, 'topright');
 var itinControl = L.easyButton('fa-flag-checkered', getNextPOI, 'Control Itinerary', map, 'topright');
 
 // When routino fails plan, we need to retry its API but
@@ -51,8 +54,12 @@ $(".dropdown-menu li a").click(function() {
   $(this).parents(".btn-group").find('.selection').val(option);
 });
 
-function selectVehicleType() {
-  $("#vehicleModal").modal("show");
+// Modal Windows and Sidebar display functions
+function showModalWindow(modalId) {
+  if(modalId === null || modalId === undefined) {
+      modalId = "#vehicleModal";
+  }
+  $(modalId).modal("show");
 };
 
 function toggleSidebar() {
@@ -208,15 +215,70 @@ function getNextPOI() {
   $("#routePlanModal").modal("show");
 };
 
-// Process the itinerary step-by-step information
+// Given an index it fetches the step description on
+// that position (sidebar) and enhances its style (bold)
+function markImportantStep(index) {
+  var steps = $("tbody.list tr");
+  var scrollIndex = index > 0 ? index-1 : index;
+  currentStep = index;
+  $.each(steps, function(i) {
+    if(i == index) {
+      steps[scrollIndex].scrollIntoView()
+      steps[i].setAttribute("class", "clickableRow selected-step");
+    } else {
+      steps[i].setAttribute("class", "clickableRow");
+    }
+  });
+};
+
+// Shows details fa-chevron-rightstep position on map (user clicked on sidebar)
+function showSegment() {
+  var index = parseInt($(this)[0].rowIndex)-4;
+  var latLng = new L.LatLng(stepsLayer[index].lat, stepsLayer[index].lon);
+  map.panTo(latLng);
+};
+
 // Processes the itinerary step-by-step information
 function writeStepInfo(steps) {
+  var row;
+  stepsLayer = [];
   $("#route-description").text("Your itinerary has been planned. Here are the instructions:");
-  for(var index in steps) {
-    var row = '<tr style="cursor: pointer;"><td style="vertical-align: middle;"><i class="fa fa-angle-right"></i></td><td class="feature-name">'+steps[index].desc+'</td><td style="vertical-align: middle;"></td></tr>';
+  $.each(steps, function(index) {
+    if(index == steps.length-1) {
+      row = '<tr class="clickableRow" style="cursor: pointer;"><td style="vertical-align: middle;"><i class="fa fa-flag"></i></td><td class="feature-name"><strong>'+steps[index].desc+'</strong></td><td style="vertical-align: middle;"></td></tr>';
+    } else {
+      row = '<tr class="clickableRow" style="cursor: pointer;"><td style="vertical-align: middle;"><i class="fa fa-angle-right"></i></td><td class="feature-name">'+steps[index].desc+'</td><td style="vertical-align: middle;"></td></tr>';
+    }
     $("#feature-list tbody").append(row);
-  }
+    stepsLayer.push({'id': index, 'lat': steps[index].lat, 'lon': steps[index].lon});
+  });
+  $(".clickableRow").click(showSegment);
+  getClosestPoint();
   $("#sidebar").show();
+};
+
+// Function to retrieve the closest point from itinerary to userLocation
+function getClosestPoint() {
+  var currlat, currLon, currDiff, closerCoords;
+  var distanceDiffs = [];
+  var minDiff = (90+180)/2;
+  var closest = L.GeometryUtil.closest(map, stepsLayer, userLocation);
+  if (closest != null) {
+    var lat = parseFloat(closest.lat.toFixed(4));
+    var lon = parseFloat(closest.lng.toFixed(4));
+    for (var index = stepsLayer.length-2; index >= currentStep; index--) {
+      currlat = stepsLayer[index].lat;
+      currlon = stepsLayer[index].lon;
+      currDiff = (Math.abs(lat - parseFloat(currlat).toFixed(4)) + Math.abs(lon - parseFloat(currlon).toFixed(4)))/2;
+      if(currDiff < minDiff) {
+        minDiff = currDiff;
+        closerCoords = index;
+      }
+      distanceDiffs.push({'averagediff': currDiff});
+    }
+    // console.log("CLOSER: " + closerCoords + " (" + minDiff + ")");
+    markImportantStep(closerCoords);
+  }
 };
 
 // Prepares the places for routing, corrects buttons and other
@@ -291,13 +353,13 @@ function getBestItinerary(destination, vehicleType) {
             coords[seg].push(point);
           };
         };
+        steps = $.parseJSON(JSON.stringify(income.route));
+        writeStepInfo(steps);
         routinoCalls = 0;
         var polyline = L.multiPolyline(coords, {color: 'blue'});
         routingLayer.addLayer(polyline);
         $("#loading").hide();
       }
-      steps = $.parseJSON(JSON.stringify(income.route));
-      writeStepInfo(steps);
     },
     error: function(data) {
       $("#loading").hide();

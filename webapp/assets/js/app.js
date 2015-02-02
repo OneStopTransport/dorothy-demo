@@ -9,6 +9,7 @@ function setUserLocation(location) {
   if (location != undefined || location != null) {
     userLocation = location.latlng;
     map.panTo(userLocation);
+    getClosestPoint();
   }
 };
 
