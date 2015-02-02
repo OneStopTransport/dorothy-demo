@@ -8,6 +8,17 @@ $("#sidebar-hide-btn").click(function() {
 function setUserLocation(location) {
   if (location != undefined || location != null) {
     userLocation = location.latlng;
+    if(locationMarker === null || locationMarker === undefined) {
+      var truckMarker = L.AwesomeMarkers.icon({
+        icon: 'truck',
+        prefix: 'fa',
+        markerColor: 'blue'
+      });
+      locationMarker = new L.marker(userLocation, {
+        draggable: true,
+        icon: truckMarker
+      });
+    }
     map.panTo(userLocation);
     getClosestPoint();
   }

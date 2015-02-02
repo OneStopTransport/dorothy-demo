@@ -26,6 +26,13 @@ var checkedInPoints = [];
 var sidebarControl = L.easyButton('fa-navicon', toggleSidebar, 'Show Itinerary', map, 'topleft');
 var vehicleControl = L.easyButton('fa-truck', showModalWindow, 'Vehicle Type', map, 'topright');
 var itinControl = L.easyButton('fa-flag-checkered', getNextPOI, 'Control Itinerary', map, 'topright');
+var recalcControl = L.easyButton('fa-refresh', recalculateItinerary, 'Recalculate Itinerary', map, 'topright');
+var cleanControl = L.easyButton('fa-eraser', clearItinerary, 'Clear Itinerary', map, 'topright');
+
+// Div for the recalcControl button
+// (needed to be unhidden when itinerary is planned)
+var locRefresh = document.getElementsByClassName('fa-refresh')[0].parentNode.parentNode;
+var locClear = document.getElementsByClassName('fa-eraser')[0].parentNode.parentNode;
 
 // When routino fails plan, we need to retry its API but
 // only 3 times, in order not to enter an infinite loop
@@ -57,7 +64,11 @@ $(".dropdown-menu li a").click(function() {
 // Modal Windows and Sidebar display functions
 function showModalWindow(modalId) {
   if(modalId === null || modalId === undefined) {
+    if(this.options.intentedIcon === "fa-question") {
+      modalId = "#aboutModal";
+    } else if(this.options.intentedIcon === "fa-truck") {
       modalId = "#vehicleModal";
+    }
   }
   $(modalId).modal("show");
 };
@@ -66,7 +77,19 @@ function toggleSidebar() {
   $("#sidebar").toggle();
 };
 
-function controlItinerary() {
+// Reset itinerary for recalculation
+function clearItinerary() {
+  // Removes polylines from routing layer
+  // and table rows from sidebar (step-by-step)
+  map.removeLayer(locationMarker);
+  routingLayer.clearLayers();
+  locRefresh.style["display"] = "none";
+  locClear.style["display"] = "none";
+  currentDestination = null;
+  currentStep = 0;
+  $("#route-description").text("No itinerary information available yet.");
+  $("#feature-list tbody").find("tr").remove();
+};
   getNextPOI();
 };
 
@@ -85,6 +108,7 @@ function planItinerary(optimal) {
     prefix: 'fa',
     markerColor: 'green'
   });
+  clearItinerary();
   if(map.hasLayer(destinationMarker)) {
     map.removeLayer(destinationMarker);
   }
@@ -97,8 +121,31 @@ function planItinerary(optimal) {
   map.addLayer(destinationMarker);
   getBestItinerary(currentDestination, vehicleType);
   map.invalidateSize();
+  locRefresh.style["display"] = "block";
+  locClear.style["display"] = "block";
 };
 
+// Sets locationMarker as draggable, shows Popup info and listens to dragging behaviour
+function recalculateItinerary() {
+  var vehicleType = $('#vehicle-choice').find(".selection").text().toLowerCase();
+  map.panTo(userLocation);
+  var currDest = currentDestination;
+  clearItinerary();
+  currentDestination = currDest;
+  map.addLayer(locationMarker);
+  locationMarker.dragging.enable();
+  locationMarker.bindPopup("Drag me to your desired starting position!").openPopup();
+  locationMarker.on("dragend", function() {
+    locationMarker.bindPopup("Click <i class='fa fa-refresh'></i> to change my position");
+    locationMarker.dragging.disable();
+    locationMarker.closePopup();
+    userLocation = locationMarker.getLatLng();
+    getBestItinerary(currentDestination, vehicleType);
+    map.invalidateSize();
+    locRefresh.style["display"] = "block";
+    locClear.style["display"] = "block";
+  });
+};
 
 // By choosing a vehicle type in the form, fill it with
 // values from the dictionary vehicleProps
@@ -184,6 +231,12 @@ function fixButtons() {
       icons[index].style.verticalAlign = 'middle';
     }
   };
+  // Disable location control
+  var locControl = document.getElementsByClassName('leaflet-control-locate')[0];
+  locControl.style.display = "none";
+  // Hide recalculate itinerary control
+  locRefresh.style.display = "none";
+  locClear.style.display = "none";
 };
 
 // Returns string with lat,lon as a tuple string with 5 decimal points
