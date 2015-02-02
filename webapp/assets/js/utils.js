@@ -22,6 +22,9 @@ var sidebarControl = L.easyButton('fa-navicon', toggleSidebar, 'Show Itinerary',
 var vehicleControl = L.easyButton('fa-truck', selectVehicleType, 'Vehicle Type', map, 'bottomleft');
 var itinControl = L.easyButton('fa-flag-checkered', controlItinerary, 'Control Itinerary', map, 'bottomright');
 
+// When routino fails plan, we need to retry its API but
+// only 3 times, in order not to enter an infinite loop
+var routinoCalls = 0;
 
 // Function to change value of input
 $.fn.changeVal = function (v) {
@@ -70,14 +73,24 @@ function planItinerary() {
   var pointId = $("#point-selection").text();
   pointId = pointId.substring(1, pointId.indexOf("-") - 1);
   var point = getPoint(pointId);
-  var marker = L.marker(coords);
-  marker.bindPopup("<b>Load/Unload #" + pointId + "</b><br><b>Street:</b> " + point.street.name + "<br><b>Schedule:</b> " + point.metadata['Horario']).openPopup();
   $("#feature-list tbody").html("");
   $("#route-description").text("No itinerary information available yet.");
   routingLayer.clearLayers();
   routingLayer.addLayer(marker);
   var coordinates = point.geom_feature.coordinates;
+  var destMarker = L.AwesomeMarkers.icon({
+    icon: 'map-marker',
+    prefix: 'fa',
+    markerColor: 'green'
+  });
+  if(map.hasLayer(destinationMarker)) {
+    map.removeLayer(destinationMarker);
+  }
   currentDestination = [parseFloat(coordinates[1]), parseFloat(coordinates[0])];
+  destinationMarker = L.marker(currentDestination, {
+    icon: destMarker,
+  });
+  map.addLayer(destinationMarker);
   getBestItinerary(currentDestination, vehicleType);
   map.invalidateSize();
 }
@@ -226,30 +239,54 @@ function setupPlaces() {
 
 // Calls Routino API and draws result on map
   var host = "http://localhost:5000/";  // Replace with your Flask instance host
-  var url = host + userLocation.lng + "," + userLocation.lat + "/" + destination[1] + "," + destination[0] + "/quickest/" + vehicleType + '/' +  currentVehicle;
-  var itinerary = null;
 function getBestItinerary(destination, vehicleType) {
+  var url = host + parseFloat(userLocation.lng).toFixed(4) + "," + parseFloat(userLocation.lat).toFixed(4) + "/" + parseFloat(destination[1]).toFixed(3) + "," + parseFloat(destination[0]).toFixed(4) + "/quickest/" + vehicleType + '/' +  currentVehicle;
+  var response = null;
   var steps = null;
   $("#loading").show();
+  map.addLayer(destinationMarker);
   $.ajax({
     url: url,
     dataType: 'jsonp',
     data: {},
     success: function(income) {
-      itinerary = $.parseJSON(JSON.stringify(income.track));
-      var coords = [];
-      for(var seg in itinerary) {
-        coords[seg] = [];
-        for(var pt in itinerary[seg]) {
-          var point = new L.LatLng(itinerary[seg][pt].lat, itinerary[seg][pt].lon);
-          coords[seg].push(point);
+      routinoCalls++;
+      response = $.parseJSON(JSON.stringify(income));
+      // Response should be JSON list
+      if(typeof(response) === "string") {
+        console.log("BUG with Routino API");
+        // We try the API for three times, then we give up
+        if(routinoCalls > 3) {
+          $("#loading").hide();
+          alert("Sorry, but itinerary planning was not possible, please try again");
+          return;
         }
+        getBestItinerary(destination, vehicleType);
+      } else {
+        // Result received, parse the data we need
+        var point, coords = [];
+        var itinerary = response['track'];
+        for (var seg in itinerary) {
+          coords[seg] = [];
+          for (var pt in itinerary[seg]) {
+            point = new L.LatLng(itinerary[seg][pt].lat, itinerary[seg][pt].lon);
+            coords[seg].push(point);
+          };
+        };
+        routinoCalls = 0;
+        var polyline = L.multiPolyline(coords, {color: 'blue'});
+        routingLayer.addLayer(polyline);
+        $("#loading").hide();
       }
       steps = $.parseJSON(JSON.stringify(income.route));
       writeStepInfo(steps);
-      var polyline = L.multiPolyline(coords, {color: 'blue'});
-      routingLayer.addLayer(polyline);
-      map.fitBounds(polyline.getBounds());
+    },
+    error: function(data) {
+      $("#loading").hide();
+      console.log(data);
+    }
+  });
+};
       $("#loading").hide();
     },
     error: function(data) {

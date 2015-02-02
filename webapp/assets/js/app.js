@@ -1,4 +1,4 @@
-var userLocation;
+var map, userLocation, locationMarker, destinationMarker;
 
 $("#sidebar-hide-btn").click(function() {
   $('#sidebar').hide();
@@ -8,6 +8,7 @@ $("#sidebar-hide-btn").click(function() {
 function setUserLocation(location) {
   if (location != undefined || location != null) {
     userLocation = location.latlng;
+    map.panTo(userLocation);
   }
 };
 
@@ -75,7 +76,7 @@ var locateControl = L.control.locate({
     clickable: false
   },
   icon: "icon-direction",
-  metric: false,
+  metric: true,
   locateOptions: {
     maxZoom: 18,
     watch: true,
