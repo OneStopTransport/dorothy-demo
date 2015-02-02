@@ -66,6 +66,32 @@
       </div>
     </div>
 
+    <div class="modal fade" id="nextStepModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Arrival to your destination</h4>
+          </div>
+          <div class="modal-body" id="nextstep-content">
+              <div class="row input-row-large">
+                  <div class="col-xs-12 col-md-12 vcenter">
+                    <p class="modal-instructions">It seems you are about to arrive to your destination.<br/>Would you like to set up the next destination?</p>
+                  </div>
+              </div>
+              <div class="row input-row-large">
+                  <div class="col-xs-12 col-md-12 vcenter">
+                      <div class="input-label" style="text-align:center;">
+                          <button type='button' class='btn btn-lg btn-danger' data-dismiss='modal' style="margin-right:5px;">No, not yet</button>
+                          <button type='button' class='btn btn-lg btn-success' data-dismiss='modal' style="margin-left:5px;" id='vehicle-props-save' onclick="setNextDestination()">Yes, next destination</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="modal fade" id="routePlanModal" tabindex="-1" role="dialog">
       <div class="modal-dialog">
         <div class="modal-content">

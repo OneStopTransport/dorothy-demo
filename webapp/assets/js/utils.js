@@ -90,7 +90,30 @@ function clearItinerary() {
   $("#route-description").text("No itinerary information available yet.");
   $("#feature-list tbody").find("tr").remove();
 };
+
+// When driver arrives near itinerary destination
+// this function is called to show the next destination
+function setNextDestination() {
   getNextPOI();
+  if(currentOptimal === true) {
+    var currentPoint = $("#opt-point-selection").text();
+    currentPoint = currentPoint.substring(1, currentPoint.indexOf("-") - 1);
+    for(var index in optimalPoints) {
+      if(optimalPoints[index].name === currentPoint) {
+        if(index < optimalPoints.length-1) {
+          index++;
+        }
+        var point = optimalPoints[index];
+        var pointName = "#" + point.name + " - " + point.street;
+        updatePointProps(point.name, true);
+        $("#opt-loadpoint-choice").find('.selection').text(pointName);
+        $("#opt-loadpoint-choice").find('.selection').val(pointName);
+      }
+    };
+  } else {
+    $("#manualPlanTab")[0].setAttribute("class", "active");
+    $("#optimalPlanTab")[0].setAttribute("class", "");
+  }
 };
 
 // Prepares every attribute needed for the itinerary planning API
@@ -274,6 +297,9 @@ function markImportantStep(index) {
   var steps = $("tbody.list tr");
   var scrollIndex = index > 0 ? index-1 : index;
   currentStep = index;
+  if(index == steps.length-2) {
+    showModalWindow("#nextStepModal");
+  }
   $.each(steps, function(i) {
     if(i == index) {
       steps[scrollIndex].scrollIntoView()
