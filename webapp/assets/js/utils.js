@@ -387,6 +387,7 @@ function writeStepInfo(steps) {
   var row, dist, time, prevDist, prevTime, prevStep;
   stepsLayer = [], distanceTimes = [];
   $("#route-description").text("Your itinerary has been planned. Here are the instructions:");
+  $("#feature-list").find("tr.clickableRow").remove();
   var last = steps.length-1;
   var totalDist = steps[last].desc.substring(steps[last].desc.indexOf('Journey ')+8, steps[last].desc.indexOf(' km,'));
   var totalTime = steps[last].desc.substring(steps[last].desc.indexOf('km, ')+4, steps[last].desc.indexOf(' minutes'));
