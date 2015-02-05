@@ -22,11 +22,16 @@ var loadingPoints = [];
 var optimalPoints = [];
 var checkedInPoints = [];
 
+// For the itinerary zoom operations
+var currentFullZoom = false;
+var currentZoomIcon = 'fa-search-minus';
+
 // Buttons for the vehicle choice and for the itineraries
 var sidebarControl = L.easyButton('fa-navicon', toggleSidebar, 'Show Itinerary', map, 'topleft');
 var helpControl = L.easyButton('fa-question', showModalWindow, 'Show Help', map, 'topright');
 var vehicleControl = L.easyButton('fa-truck', showModalWindow, 'Vehicle Type', map, 'topright');
 var itinControl = L.easyButton('fa-flag-checkered', getNextPOI, 'Control Itinerary', map, 'topright');
+var zoomControl = L.easyButton(currentZoomIcon, changeZoom, 'Change Itinerary zoom levels', map, 'topright');
 var recalcControl = L.easyButton('fa-refresh', recalculateItinerary, 'Recalculate Itinerary', map, 'topright');
 var cleanControl = L.easyButton('fa-eraser', clearItinerary, 'Clear Itinerary', map, 'topright');
 
@@ -82,6 +87,7 @@ function toggleSidebar() {
 function clearItinerary() {
   // Removes polylines from routing layer
   // and table rows from sidebar (step-by-step)
+  var locZoom = document.getElementsByClassName(currentZoomIcon)[0].parentNode.parentNode;
   if(map.hasLayer(destinationMarker)) {
     map.removeLayer(destinationMarker);
   }
@@ -89,6 +95,7 @@ function clearItinerary() {
   routingLayer.clearLayers();
   locRefresh.style["display"] = "none";
   locClear.style["display"] = "none";
+  locZoom.style["display"] = "none";
   currentDestination = null;
   currentStep = 0;
   $("#route-description").text("No itinerary information available yet.");
@@ -124,6 +131,7 @@ function setNextDestination() {
 // optimal is a boolean variable for itinerary tab selection (manual/optimal)
 function planItinerary(optimal) {
   locateControl.locate();
+  var locZoom = document.getElementsByClassName(currentZoomIcon)[0].parentNode.parentNode;
   var vehicleType = $('#vehicle-choice').find(".selection").text().toLowerCase();
   var selectionId = optimal === true ? "#opt-point-selection" : "#point-selection";
   var pointId = $(selectionId).text().substring(1, $(selectionId).text().indexOf("-")-1);
@@ -150,11 +158,13 @@ function planItinerary(optimal) {
   map.invalidateSize();
   locRefresh.style["display"] = "block";
   locClear.style["display"] = "block";
+  locZoom.style["display"] = "block";
 };
 
 // Sets locationMarker as draggable, shows Popup info and listens to dragging behaviour
 function recalculateItinerary() {
   var vehicleType = $('#vehicle-choice').find(".selection").text().toLowerCase();
+  var locZoom = document.getElementsByClassName(currentZoomIcon)[0].parentNode.parentNode;
   map.panTo(userLocation);
   var currDest = currentDestination;
   clearItinerary();
@@ -171,6 +181,7 @@ function recalculateItinerary() {
     map.invalidateSize();
     locRefresh.style["display"] = "block";
     locClear.style["display"] = "block";
+    locZoom.style["display"] = "block";
   });
 };
 
@@ -242,6 +253,7 @@ function saveVehicleProps() {
 function fixButtons() {
   // Fix buttons size
   var buttons = document.getElementsByClassName('leaflet-control');
+  var locZoom = document.getElementsByClassName(currentZoomIcon)[0].parentNode.parentNode;
   for (var index in buttons) {
     if (buttons[index].children) {
       buttons[index].children[0].style['height'] = '52px';
@@ -264,12 +276,29 @@ function fixButtons() {
   // Hide recalculate itinerary control
   locRefresh.style.display = "none";
   locClear.style.display = "none";
+  locZoom.style.display = "none";
 };
 
 // Returns string with lat,lon as a tuple string with 5 decimal points
 function prettyCoords(coords) {
   var response = coords[1].toFixed(5) + ", " + coords[0].toFixed(5);
   return response;
+};
+
+// Changes application focus between user position and the whole itinerary
+function changeZoom() {
+  var locZoom = $('.' + currentZoomIcon);
+  if(currentFullZoom === false) {
+    locateControl.stopFollowing();
+    map.fitBounds(routingLayer.getLayers()[0]);
+  } else {
+    locateControl._following = true;
+    showUser();
+  }
+  locZoom.removeClass(currentZoomIcon);
+  currentFullZoom = !currentFullZoom;
+  currentZoomIcon = currentFullZoom === true ? "fa-search-plus" : "fa-search-minus";
+  locZoom.addClass(currentZoomIcon);
 };
 
 // Function to call OST API and fetch Lisbon Loading POIs
