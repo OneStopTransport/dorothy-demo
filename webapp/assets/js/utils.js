@@ -129,7 +129,7 @@ function planItinerary(optimal) {
   var pointId = $(selectionId).text().substring(1, $(selectionId).text().indexOf("-")-1);
   var point = getPoint(pointId, false);
   var coordinates = point.geom_feature.coordinates;
-  var schedule = optimal === true ? point.schedule : point.metadata['Horario'];
+  var schedule = point.metadata['Horario'].replace('horas', 'hours');
   var destMarker = L.AwesomeMarkers.icon({
     icon: 'map-marker',
     prefix: 'fa',
@@ -144,7 +144,7 @@ function planItinerary(optimal) {
   destinationMarker = L.marker(currentDestination, {
     icon: destMarker,
   });
-  destinationMarker.bindPopup("<b>Load/Unload #" + pointId + "</b><br><b>Street:</b> " + point.street.name + "<br><b>Schedule:</b> " + schedule).openPopup();
+  destinationMarker.bindPopup("<b>Load/Unload #" + pointId + "</b><br><b>Street:</b> " + point.street.name + "<br><b>Schedule:</b> " + schedule.replace('horas', 'hours'));
   map.addLayer(destinationMarker);
   getBestItinerary(currentDestination, vehicleType);
   map.invalidateSize();
@@ -306,7 +306,7 @@ function markImportantStep(index) {
   }
   $.each(steps, function(i) {
     if(i == index) {
-      steps[scrollIndex].scrollIntoView()
+      steps[scrollIndex].scrollIntoView();
       steps[i].setAttribute("class", "clickableRow selected-step");
     } else {
       steps[i].setAttribute("class", "clickableRow");
