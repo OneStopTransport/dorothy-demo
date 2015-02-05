@@ -12,6 +12,9 @@ var currentVehicle = vehicleProps['Light'].join();
 var currentDestination = null;
 var currentOptimal = false;
 var currentStep = 0;
+var totalDistLeft = null;
+var totalTimeLeft = null;
+var distanceTimes = [];
 
 // Map layer to add markers and polygons
 var routingLayer = new L.LayerGroup();
@@ -92,14 +95,22 @@ function clearItinerary() {
     map.removeLayer(destinationMarker);
   }
   map.removeLayer(locationMarker);
+  locateControl._circleMarker.hideLabel();
   routingLayer.clearLayers();
   locRefresh.style["display"] = "none";
   locClear.style["display"] = "none";
   locZoom.style["display"] = "none";
   currentDestination = null;
   currentStep = 0;
+  showUser();
   $("#route-description").text("No itinerary information available yet.");
   $("#feature-list tbody").find("tr").remove();
+};
+
+// Zooms in to the user position
+function showUser() {
+  map.setZoom(18);
+  map.panTo(userLocation);
 };
 
 // When driver arrives near itinerary destination
@@ -341,6 +352,27 @@ function markImportantStep(index) {
       steps[i].setAttribute("class", "clickableRow");
     }
   });
+  var labelIndex = index >= steps.length-2 ? steps.length-2 : index;
+  var timeDiff = distanceTimes[labelIndex].time;
+  var distDiff = parseFloat(distanceTimes[labelIndex].dist).toFixed(1)
+  if(timeDiff > 60) {
+    timeDiff = '' + Math.floor(timeDiff/60) + 'h ' + Math.ceil(timeDiff%60);
+  } else {
+    timeDiff = parseFloat(timeDiff).toFixed(0);
+  }
+  var label = "Time: " + timeDiff + " min. Distance: " + distDiff + " km";
+  if(locateControl._circleMarker != undefined) {
+    if(locateControl._circleMarker.getLabel() === undefined) {
+      locateControl._circleMarker.unbindLabel();
+      locateControl._circleMarker.bindLabel(label, {
+        noHide: true,
+        direction: 'auto'
+      }).showLabel();
+    } else {
+      locateControl._circleMarker.getLabel().setContent(label)
+      locateControl._circleMarker.showLabel();
+    }
+  }
 };
 
 // Shows details fa-chevron-rightstep position on map (user clicked on sidebar)
@@ -352,13 +384,29 @@ function showSegment() {
 
 // Processes the itinerary step-by-step information
 function writeStepInfo(steps) {
-  var row;
-  stepsLayer = [];
+  var row, dist, time, prevDist, prevTime, prevStep;
+  stepsLayer = [], distanceTimes = [];
   $("#route-description").text("Your itinerary has been planned. Here are the instructions:");
+  var last = steps.length-1;
+  var totalDist = steps[last].desc.substring(steps[last].desc.indexOf('Journey ')+8, steps[last].desc.indexOf(' km,'));
+  var totalTime = steps[last].desc.substring(steps[last].desc.indexOf('km, ')+4, steps[last].desc.indexOf(' minutes'));
   $.each(steps, function(index) {
-    if(index == steps.length-1) {
+    if(index == last) {
       row = '<tr class="clickableRow" style="cursor: pointer;"><td style="vertical-align: middle;"><i class="fa fa-flag"></i></td><td class="feature-name"><strong>'+steps[index].desc+'</strong></td><td style="vertical-align: middle;"></td></tr>';
     } else {
+      prevDist = (index > 0 ? distanceTimes[index-1].dist : totalDist);
+      prevTime = (index > 0 ? distanceTimes[index-1].time : totalTime);
+      if(index > 0) {
+        prevStep = steps[index-1];
+        dist = prevStep.desc.substring(prevStep.desc.indexOf(' for ')+5, prevStep.desc.indexOf(' km,'));
+        time = prevStep.desc.substring(prevStep.desc.indexOf('km, ')+4, prevStep.desc.indexOf(' min'));
+      } else {
+        dist = 0;
+        time = 0;
+      }
+      var distDiff = prevDist - dist;
+      var timeDiff = prevTime - time;
+      distanceTimes.push({'dist': distDiff.toFixed(2), 'time': timeDiff.toFixed(2)});
       row = '<tr class="clickableRow" style="cursor: pointer;"><td style="vertical-align: middle;"><i class="fa fa-angle-right"></i></td><td class="feature-name">'+steps[index].desc+'</td><td style="vertical-align: middle;"></td></tr>';
     }
     $("#feature-list tbody").append(row);
